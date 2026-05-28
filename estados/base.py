@@ -12,5 +12,5 @@ class EstadoBase:
         pass
     def atualizar(self, dt): #Atualiza a lógica do estado, "dt" é o Delta Time para movimentalção fluida.
         pass
-    def desehar(self, tela): #Desenhas os elementos visuais na tela.
+    def desenhar(self, tela): #Desenhas os elementos visuais na tela.
         pass
