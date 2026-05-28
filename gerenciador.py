@@ -32,6 +32,5 @@ class GerenciadorJogo:
             self.estado_atual.atualizar(dt) # Executa a lógica da cena ativa passando o Delta Time para física fluida
             self.estado_atual.desenhar(self.tela) # Executa os desenhos da cena ativa, passando a nossa janela principal como o quadro onde ela vai desenhar.
             pygame.display.flip() # Atualiza a tela do monitor mostrando tudo o que foi desenhado e processado nesse frame
-            sbdajdhsjdosadsapak
         pygame.quit()
         sys.exit()
