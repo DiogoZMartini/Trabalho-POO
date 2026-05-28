@@ -13,13 +13,14 @@ class Geral:
         self.dano = dano
 
 class Item(Geral):
-    def __init__(self, nome, dano, descricao, quantidade, efeito, preco, raridade):
+    def __init__(self, nome, dano, descricao, quantidade, efeito, preco, raridade, tipo):
         super().__init__(nome, dano)
         self.descricao = descricao
         self.quantidade = quantidade
         self.efeito = efeito
         self.preco = preco
         self.raridade = raridade
+        self.tipo = tipo
 
     def getNome(self):
         return super().getNome()
@@ -35,6 +36,8 @@ class Item(Geral):
         return self.preco
     def getRaridade(self):
         return self.raridade
+    def getTipo(self):
+        return self.tipo
     def setNome(self, nome):
         super().setNome(nome)
     def setDano(self, dano):
@@ -49,6 +52,8 @@ class Item(Geral):
         self.preco = preco
     def setRaridade(self, raridade):
         self.raridade = raridade
+    def setTipo(self, tipo):
+        self.tipo = tipo
 
     def aleatorizarRaridade(self):
         pass
@@ -152,11 +157,11 @@ class Jogador(Persongaem):
         pass
 
 class Inimigo (Persongaem):
-    def __init__(self, nome, dano, vida, lvl, recurso, dropexp, dropdinheiro):
+    def __init__(self, nome, dano, vida, lvl, recurso, dropExp, dropDinheiro):
         super().__init__(nome, dano, vida, lvl, recurso)
-        self.dropexp = dropexp
-        self.dropitem = []
-        self.dropdinheiro = dropdinheiro
+        self.dropExp = dropExp
+        self.dropItem = []
+        self.dropDinheiro = dropDinheiro
 
     def getNome(self):
         return super().getNome()
@@ -169,11 +174,11 @@ class Inimigo (Persongaem):
     def getRecurso(self):
         return super().getRecurso()
     def getDropExp(self):
-        return self.dropexp
+        return self.dropExp
     def getDropItem(self):
-        return self.dropitem
+        return self.dropItem
     def getDropDinheiro(self):
-        return self.dropdinheiro
+        return self.dropDinheiro
     def setNome(self, nome):
         super().setNome(nome)
     def setDano(self, dano):
@@ -185,11 +190,11 @@ class Inimigo (Persongaem):
     def setRecurso(self, recurso):
         super().setRecurso(recurso)
     def setDropExp(self, dropexp):
-        self.dropexp = dropexp
+        self.dropExp = dropexp
     def setDropItem(self, dropitem):
-        self.dropitem = dropitem
+        self.dropItem = dropitem
     def setDropDinheiro(self, dropdinheiro):
-        self.dropdinheiro = dropdinheiro
+        self.dropDinheiro = dropdinheiro
 
     def ataque(self, dano):
         super().ataque(dano)
@@ -207,8 +212,8 @@ class Inimigo (Persongaem):
         pass
 
 class Mercador(Inimigo):
-    def __init__(self, nome, dano, vida, lvl, recurso, dropexp, dropdinheiro):
-        super().__init__(nome, dano, vida, lvl, recurso,dropexp, dropdinheiro)
+    def __init__(self, nome, dano, vida, lvl, recurso, dropExp, dropdinheiro):
+        super().__init__(nome, dano, vida, lvl, recurso, dropExp, dropdinheiro)
         self.mercadoria = []
 
     def getNome(self):
