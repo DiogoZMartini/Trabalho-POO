@@ -25,11 +25,11 @@ def inicializacaoDeCatalogos():
     tabela_inimigos.insert_multiple(lista_inimigos)
 
     lista_itens = [
-        {'nome':'Poção de Vida','descricao':'Uma poção de cura que cura 20 pontos de vida','quantidadeMaxima': 5,'efeito':'Cura','preco':12,'tipo':'Consumivel'},
-        {'nome':'Poção de Velocidade','descricao':'Uma poção que faz o seu próximo ataque atingir o alvo uma vez adicional','quantidadeMaxima':2,'efeito':'Segundo Ataque','preco':50,'tipo':'Consumivel'},
-        {'nome':'Poção de dano','descricao':'Uma poção instável que ao jogar no inimigo causa 20 de dano','quantidadeMaxima':1,'efeito': 'Causa Dano','preco':25,'tipo':'Consumivel'},
-        {'nome':'Espada de Madeira','descricao':'Uma espada de madeira','quantidadeMaxima':1,'efeito':'Aumenta o Dano','preco':14,'tipo':'Espada'},
-        {'nome':'Armadura de Couro','descricao':'Uma armadura de coiro','quantidadeMaxima':1,'efeito':'Aumenta a Defesa','preco':20,'tipo':'Peitoral'}
+        {'nome':'Poção de Vida','descricao':'Uma poção de cura que cura 20 pontos de vida','quantidadeMaxima': 5,'efeito':'Cura','preco':12,'tipo':'Consumivel','raridade': 'Comum'},
+        {'nome':'Poção de Velocidade','descricao':'Uma poção que faz o seu próximo ataque atingir o alvo uma vez adicional','quantidadeMaxima':2,'efeito':'Segundo Ataque','preco':50,'tipo':'Consumivel','raridade': 'Comum'},
+        {'nome':'Poção de dano','descricao':'Uma poção instável que ao jogar no inimigo causa 20 de dano','quantidadeMaxima':1,'efeito': 'Causa Dano','preco':25,'tipo':'Consumivel','raridade': 'Comum'},
+        {'nome':'Espada de Madeira','descricao':'Uma espada de madeira','quantidadeMaxima':1,'efeito':'Aumenta o Dano','preco':14,'tipo':'Espada','raridade': 'Comum'},
+        {'nome':'Armadura de Couro','descricao':'Uma armadura de coiro','quantidadeMaxima':1,'efeito':'Aumenta a Defesa','preco':20,'tipo':'Peitoral','raridade': 'Comum'}
     ]
     tabela_itens.insert_multiple(lista_itens)
     print("Catálogo carregado com sucesso!")

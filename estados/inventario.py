@@ -1,14 +1,15 @@
 import pygame
 from .base import EstadoBase
 from banco import tabela_jogador
-from utilidade.itens import aplicarEfeitoItem
+from utilidade.itens import Item
+
 from tinydb import Query
 class EstadoInventario(EstadoBase):
     def __init__(self, nomeJogador):
         super().__init__()
         self.col = 1
         self.linha = 15
-        self.tamanhoDeSlot = 15
+        self.tamanhoDeSlot = 30
         self.espacamento = 5
         self.nomeJogador = nomeJogador
         self.dadosJogador = None
@@ -24,16 +25,41 @@ class EstadoInventario(EstadoBase):
         resultado = tabela_jogador.search(Query().nome == self.nomeJogador)
         if resultado:
             self.dadosJogador = resultado[0]
-            self.inventario = self.dadosJogador.get('inv', [])
+            itensBanco = self.dadosJogador.get('inv', [])
+            self.inventario = []
+            for itemDit in itensBanco:
+                objetoItem = Item(
+                    nome=itemDit['nome'],
+                    dano=itemDit.get('dano', 0),
+                    descricao=itemDit['descricao'],
+                    quantidadeMaxima=itemDit.get('quantidadeMaxima', 1),
+                    efeito=itemDit['efeito'],
+                    preco=itemDit['preco'],
+                    raridade=itemDit.get('raridade', 'Comum'),
+                    tipo=itemDit['tipo']
+                )
+                self.inventario.append(objetoItem)
         else:
             self.inventario = []
     def fechar(self):
         if self.dadosJogador:
+            itensSalvaveis = []
+            for item in self.inventario:
+                itensSalvaveis.append({
+                    'nome': item.nome,
+                    'dano': item.dano,
+                    'descricao': item.descricao,
+                    'quantidadeMaxima': item.quantidadeMaxima,
+                    'efeito': item.efeito,
+                    'preco': item.preco,
+                    'raridade': item.raridade,
+                    'tipo': item.tipo
+                })
             tabela_jogador.update(
                 {
-                    'inv': self.inventario,
+                    'inv': itensSalvaveis,
                     'vida': self.dadosJogador['vida']
-                 },
+                },
                 Query().nome == self.nomeJogador
             )
         super().fechar()
@@ -63,13 +89,14 @@ class EstadoInventario(EstadoBase):
         x, y = pos
         if self.startX <= x <= self.startX + self.tamanhoDeSlot:
             for l in range(self.linha):
-                slotY = self.startY + l*(self.tamanhoDeSlot + self.espacamento)
+                slotY = self.startY + l * (self.tamanhoDeSlot + self.espacamento)
                 if slotY <= y <= slotY + self.tamanhoDeSlot:
                     return l
         return None
+
     def desenhar(self, tela):
         tela.fill((40, 40, 40))
-        # Calcula a centralização baseado no tamanho real da janela (Ex: 800x600)
+
         if not self.posicoesCalculadas:
             largura_tela, altura_tela = tela.get_size()
             grid_width = (self.col * self.tamanhoDeSlot) + ((self.col - 1) * self.espacamento)
@@ -78,17 +105,25 @@ class EstadoInventario(EstadoBase):
             self.startY = (altura_tela - grid_height) // 2
             self.posicoesCalculadas = True
 
-        # Desenha os 15 slots verticais
         for l in range(self.linha):
             slot_x = self.startX
             slot_y = self.startY + l * (self.tamanhoDeSlot + self.espacamento)
 
-            # Cor de destaque se o mouse estiver em cima
-            cor = (200, 200, 200) if self.slotSelecionado == l else (100, 100, 100)
-            pygame.draw.rect(tela, cor, (slot_x, slot_y, self.tamanhoDeSlot, self.tamanhoDeSlot))
+            # Borda/Fundo do slot sendo selecionado
+            cor_borda = (200, 200, 200) if self.slotSelecionado == l else (80, 80, 80)
+            pygame.draw.rect(tela, cor_borda, (slot_x, slot_y, self.tamanhoDeSlot, self.tamanhoDeSlot))
 
-            # Se houver item salvo no banco para esse índice
+            # Se houver item nesse índice do inventário
             if l < len(self.inventario):
-                # Desenha o miolo verde indicador de item
-                pygame.draw.rect(tela, (0, 255, 0),
-                                 (slot_x + 3, slot_y + 3, self.tamanhoDeSlot - 6, self.tamanhoDeSlot - 6))
+                item = self.inventario[l]
+
+                # 🔥 USANDO A RARIDADE NO VISUAL:
+                # Busca a cor correspondente à raridade do objeto Item. Se não achar, usa cinza.
+                cor_item = self.cores_raridade.get(item.raridade, (120, 120, 120))
+
+                # Desenha o miolo do slot com a cor baseada na raridade do item
+                pygame.draw.rect(
+                    tela,
+                    cor_item,
+                    (slot_x + 3, slot_y + 3, self.tamanhoDeSlot - 6, self.tamanhoDeSlot - 6)
+                )

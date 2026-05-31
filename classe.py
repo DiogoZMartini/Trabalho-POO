@@ -1,3 +1,5 @@
+
+
 class Geral:
     def __init__(self, nome, dano):
         self.nome = nome
@@ -11,53 +13,6 @@ class Geral:
         self.nome = nome
     def setDano(self, dano):
         self.dano = dano
-
-class Item(Geral):
-    def __init__(self, nome, dano, descricao, quantidade, efeito, preco, raridade, tipo):
-        super().__init__(nome, dano)
-        self.descricao = descricao
-        self.quantidade = quantidade
-        self.efeito = efeito
-        self.preco = preco
-        self.raridade = raridade
-        self.tipo = tipo
-
-    def getNome(self):
-        return super().getNome()
-    def getDano(self):
-        return super().getDano()
-    def getDescricao(self):
-        return self.descricao
-    def getQuantidade(self):
-        return self.quantidade
-    def getEfeito(self):
-        return self.efeito
-    def getPreco(self):
-        return self.preco
-    def getRaridade(self):
-        return self.raridade
-    def getTipo(self):
-        return self.tipo
-    def setNome(self, nome):
-        super().setNome(nome)
-    def setDano(self, dano):
-        super().setDano(dano)
-    def setDescricao(self, descricao):
-        self.descricao = descricao
-    def setQuantidade(self, quantidade):
-        self.quantidade = quantidade
-    def setEfeito(self, efeito):
-        self.efeito = efeito
-    def setPreco(self, preco):
-        self.preco = preco
-    def setRaridade(self, raridade):
-        self.raridade = raridade
-    def setTipo(self, tipo):
-        self.tipo = tipo
-
-    def aleatorizarRaridade(self):
-        pass
-
 
 class Persongaem(Geral):
     def __init__(self, nome, dano, vida, lvl, recurso):
