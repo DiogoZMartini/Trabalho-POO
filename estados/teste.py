@@ -1,21 +1,13 @@
 import pygame
-from .base import EstadoBase
-from entidades.jogador import Jogador
+import sys
+from estados.base import EstadoBase
 
-class Teste(EstadoBase):
+class MenuPrincipal(EstadoBase):
     def __init__(self):
         super().__init__()
-        self.jogador = Jogador(100,100)
-    def desenhar(self,tela):
-        tela.fill('red')
-        self.jogador.desenhar(tela)
-    def tratarEventos(self, eventos):  # Metodo para tratar todos os eventos (inputs) no frame específico.
-        for evento in eventos:
-            if evento.type == pygame.QUIT:
-                #fechar o jogo
-                pass
-    def atualizar(self,dt):  # <--- NOVO MÉTODO
-        # Captura todas as teclas pressionadas NESTE frame
-        comandos = pygame.key.get_pressed()
-        # Passa a lista de comandos correta para o jogador
-        self.jogador.mover(comandos,dt)
+        self.start = pygame.Rect(250,50,300,100)
+        self.start.center = (400, 100)
+    def desenhar(self, tela):
+        # Pinta o fundo com uma cor cinza escura bem fuleira para destacar o texto
+        tela.fill((40, 40, 50))
+        pygame.draw.rect(tela,'gray',self.start)
