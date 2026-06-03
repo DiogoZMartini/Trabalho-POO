@@ -9,7 +9,7 @@ class Exemplo(EstadoBase):
         for evento in eventos:
             if evento.type == pygame.KEYDOWN: # Verifica se o tipo do evento atual é o pressionamento de QUALQUER tecla do teclado.
                 if evento.key == pygame.K_ESCAPE: # Se uma tecla foi pressionada, verifica especificamente se essa tecla é o ESCAPE (ESC)
-                    self.proximo_estado = "Teste" # Define qual será o texto de identificação da próxima tela
+                    self.proximo_estado = "teste" # Define qual será o texto de identificação da próxima tela
                     self.concluido = True # Muda a flag para True. Isso avisa o Gerenciador que a tela acabou e que pode mudar de estado"
 
     def desenhar(self, tela):
