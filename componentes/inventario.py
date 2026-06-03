@@ -1,12 +1,11 @@
 import pygame
-from .base import EstadoBase
 from banco import tabela_jogador
 from utilidade.itens import Item
-
 from tinydb import Query
-class EstadoInventario(EstadoBase):
+
+
+class Inventario:
     def __init__(self, nomeJogador):
-        super().__init__()
         self.col = 1
         self.linha = 15
         self.tamanhoDeSlot = 30
@@ -18,10 +17,9 @@ class EstadoInventario(EstadoBase):
         self.posicoesCalculadas = False
         self.startX = 0
         self.startY = 0
+        self.carregar_inventario()
 
-    def abrir(self):
-        super().abrir()
-        self.slotSelecionado = None
+    def carregar_inventario(self):
         resultado = tabela_jogador.search(Query().nome == self.nomeJogador)
         if resultado:
             self.dadosJogador = resultado[0]
@@ -39,9 +37,8 @@ class EstadoInventario(EstadoBase):
                     tipo=itemDit['tipo']
                 )
                 self.inventario.append(objetoItem)
-        else:
-            self.inventario = []
-    def fechar(self):
+
+    def salvar_inventario(self):
         if self.dadosJogador:
             itensSalvaveis = []
             for item in self.inventario:
@@ -62,29 +59,26 @@ class EstadoInventario(EstadoBase):
                 },
                 Query().nome == self.nomeJogador
             )
-        super().fechar()
+
     def tratarEventos(self, eventos):
         ponteiroMouse = pygame.mouse.get_pos()
         self.slotSelecionado = self.obterSlotPorPosicao(ponteiroMouse)
-        for evento in eventos:
-            if evento.type == pygame.KEYDOWN:
-                if evento.key == pygame.K_SPACE:
-                    self.proximo_estado = "Teste"
-                    self.concluido = True
 
+        for evento in eventos:
             if evento.type == pygame.MOUSEBUTTONDOWN and self.slotSelecionado is not None:
-                    idx = self.slotSelecionado
-                    if idx < len(self.inventario):
-                        item = self.inventario[idx]
-                        if evento.button == 1: #Clique esquerdo do mause
-                            sucesso = aplicarEfeitoItem(item, self.dadosJogador)
-                            if sucesso:
-                                self.inventario.pop(idx)
-                            elif evento.button == 3: #Clique direito do mause
-                                removido = self.inventario.pop(idx)
-                                print(f"Removeu {removido['nome']}")
-    def atualizar(self, dt):
-        pass
+                idx = self.slotSelecionado
+                if idx < len(self.inventario):
+                    item = self.inventario[idx]
+                    if evento.button == 1:
+                        sucesso = item.aplicarEfeitoItem(item, self.dadosJogador)
+                        if sucesso:
+                            self.inventario.pop(idx)
+                            self.salvar_inventario()
+                    elif evento.button == 3:
+                        removido = self.inventario.pop(idx)
+                        print(f"Removeu {removido.getNome()}")
+                        self.salvar_inventario()
+
     def obterSlotPorPosicao(self, pos):
         x, y = pos
         if self.startX <= x <= self.startX + self.tamanhoDeSlot:
@@ -95,8 +89,6 @@ class EstadoInventario(EstadoBase):
         return None
 
     def desenhar(self, tela):
-        tela.fill((40, 40, 40))
-
         if not self.posicoesCalculadas:
             largura_tela, altura_tela = tela.get_size()
             grid_width = (self.col * self.tamanhoDeSlot) + ((self.col - 1) * self.espacamento)
@@ -109,21 +101,13 @@ class EstadoInventario(EstadoBase):
             slot_x = self.startX
             slot_y = self.startY + l * (self.tamanhoDeSlot + self.espacamento)
 
-            # Borda/Fundo do slot sendo selecionado
             cor_borda = (200, 200, 200) if self.slotSelecionado == l else (80, 80, 80)
             pygame.draw.rect(tela, cor_borda, (slot_x, slot_y, self.tamanhoDeSlot, self.tamanhoDeSlot))
 
-            # Se houver item nesse índice do inventário
             if l < len(self.inventario):
-                item = self.inventario[l]
-
-                # 🔥 USANDO A RARIDADE NO VISUAL:
-                # Busca a cor correspondente à raridade do objeto Item. Se não achar, usa cinza.
-                cor_item = self.cores_raridade.get(item.raridade, (120, 120, 120))
-
-                # Desenha o miolo do slot com a cor baseada na raridade do item
+                cor_miolo = (160, 160, 160)
                 pygame.draw.rect(
                     tela,
-                    cor_item,
+                    cor_miolo,
                     (slot_x + 3, slot_y + 3, self.tamanhoDeSlot - 6, self.tamanhoDeSlot - 6)
                 )

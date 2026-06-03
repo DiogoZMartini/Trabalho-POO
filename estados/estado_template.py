@@ -1,5 +1,5 @@
 import pygame
-from .base import EstadoBase
+from .estado_base import EstadoBase
 class Exemplo(EstadoBase):
     def __init__(self):
         super().__init__()

@@ -3,7 +3,7 @@ from classe import Geral
 import random
 
 class Item(Geral):
-    def __init__(self, nome, dano, descricao, quantidadeMaxima, efeito, preco, raridade, tipo, valorEfeito):
+    def __init__(self, nome, dano, descricao, quantidadeMaxima, efeito, preco, raridade, tipo, valorEfeito=20):
         super().__init__(nome, dano)
         self.descricao = descricao
         self.quantidadeMaxima = quantidadeMaxima

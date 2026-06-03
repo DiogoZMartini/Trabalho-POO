@@ -1,5 +1,5 @@
 from gerenciador import GerenciadorJogo
-from estados.template import Exemplo
+from estados.estado_template import Exemplo
 from estados.teste import Teste
 def main():
     dicionarioEstados = {  # Cria um dicionário para mapear nomes em texto para as telas reais.
