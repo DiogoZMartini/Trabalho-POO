@@ -28,11 +28,11 @@ def inicializacaoDeCatalogos():
         {'nome':'Poção de Vida','descricao':'Uma poção de cura que cura 20 pontos de vida','quantidadeMaxima': 5,'efeito':'Cura','preco':12,'tipo':'Consumivel','raridade': 'Comum'},
         {'nome':'Poção de Velocidade','descricao':'Uma poção que faz o seu próximo ataque atingir o alvo uma vez adicional','quantidadeMaxima':2,'efeito':'Segundo Ataque','preco':50,'tipo':'Consumivel','raridade': 'Comum'},
         {'nome':'Poção de dano','descricao':'Uma poção instável que ao jogar no inimigo causa 20 de dano','quantidadeMaxima':1,'efeito': 'Causa Dano','preco':25,'tipo':'Consumivel','raridade': 'Comum'},
-        {'nome':'Espada de Madeira','descricao':'Uma espada de madeira','quantidadeMaxima':1,'efeito':'Aumenta o Dano','preco':14,'tipo':'Espada','raridade': 'Comum'},
-        {'nome':'Armadura de Couro','descricao':'Uma armadura de coiro','quantidadeMaxima':1,'efeito':'Aumenta a Defesa','preco':20,'tipo':'Peitoral','raridade': 'Comum'}
+        {'nome':'Espada de Madeira','descricao':'Uma espada de madeira','quantidadeMaxima':1,'efeito':'Aumenta o Dano','preco':14,'tipo':'Arma','raridade': 'Comum'},
+        {'nome':'Armadura de Couro','descricao':'Uma armadura de coiro','quantidadeMaxima':1,'efeito':'Aumenta a Defesa','preco':20,'tipo':'Armadura','raridade': 'Comum'}
     ]
     tabela_itens.insert_multiple(lista_itens)
     print("Catálogo carregado com sucesso!")
 
-def salvarJogo(nome, vida, vidaMaxima, lvl, exp, classe, inv, dinheiro):
-    tabela_jogador.upsert({'nome':nome,'vida':vida,'vidaMaxima': vidaMaxima,'lvl':lvl,'exp':exp,'classe':classe,'inv':inv,'dinheiro':dinheiro}, Query().name == nome)
+def salvarJogo(nome, vida, vidaMaxima, lvl, exp, classe, inv, equipamentos, dinheiro):
+    tabela_jogador.upsert({'nome':nome,'vida':vida,'vidaMaxima': vidaMaxima,'lvl':lvl,'exp':exp,'classe':classe,'inv':inv, 'equipamentos':equipamentos,'dinheiro':dinheiro}, Query().name == nome)

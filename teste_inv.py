@@ -8,12 +8,12 @@ def configurar_banco_para_teste():
     tabela_jogador.remove(Query().nome == nome_do_alvo)
     tabela_jogador.insert({
         "nome": nome_do_alvo,
-        "vida": 60,
+        "vida": 100,
         "vidaMaxima": 100,
         "inv": [
             {
                 "nome": "Poção de Cura",
-                "descricao": "Recupera vida.",
+                "descricao": "Recupera 30 de vida instantaneamente.",
                 "quantidadeMaxima": 5,
                 "dano": 0,
                 "efeito": "Cura",
@@ -23,18 +23,80 @@ def configurar_banco_para_teste():
                 "valor_efeito": 30
             },
             {
-                "nome": "Adaga de Arremesso",
-                "descricao": "Causa dano à distância.",
-                "quantidadeMaxima": 5,
-                "dano": 15,
-                "efeito": "Causa Dano",
-                "preco": 40,
-                "raridade": "Raro",
-                "tipo": "Consumivel",
-                "valor_efeito": 15
+                "nome": "Yelmo Lendário de Dragão",
+                "descricao": "Um capacete forjado nas chamas de um dragão ancião. Concede muita defesa.",
+                "quantidadeMaxima": 1,
+                "dano": 0,
+                "efeito": "Nenhum",
+                "preco": 1200,
+                "raridade": "Lendário",
+                "tipo": "Capacete"
             }
-        ]
+        ],
+        "equipamentos": {
+            "capacete": {
+                "nome": "Elmo de Ferro",
+                "descricao": "Proteção pesada para a cabeça.",
+                "quantidadeMaxima": 1,
+                "dano": 0,
+                "efeito": "Nenhum",
+                "preco": 150,
+                "raridade": "Comum",
+                "tipo": "Capacete"
+            },
+            "colar": {
+                "nome": "Amuleto de Rubi",
+                "descricao": "Aumenta ligeiramente a sua estamina.",
+                "quantidadeMaxima": 1,
+                "dano": 0,
+                "efeito": "Nenhum",
+                "preco": 300,
+                "raridade": "Raro",
+                "tipo": "Colar"
+            },
+            "arma": {
+                "nome": "Espada Longa",
+                "descricao": "Uma espada de aço afiada.",
+                "quantidadeMaxima": 1,
+                "dano": 35,
+                "efeito": "Nenhum",
+                "preco": 250,
+                "raridade": "Comum",
+                "tipo": "Arma"
+            },
+            "armadura": {
+                "nome": "Cota de Malha",
+                "descricao": "Armadura flexível feita de anéis de metal.",
+                "quantidadeMaxima": 1,
+                "dano": 0,
+                "efeito": "Nenhum",
+                "preco": 450,
+                "raridade": "Raro",
+                "tipo": "Armadura"
+            },
+            "bota": {
+                "nome": "Botas de Couro",
+                "descricao": "Permite mover-se com mais silêncio.",
+                "quantidadeMaxima": 1,
+                "dano": 0,
+                "efeito": "Nenhum",
+                "preco": 80,
+                "raridade": "Comum",
+                "tipo": "Bota"
+            },
+            "anel": {
+                "nome": "Anel do Falcão",
+                "descricao": "Aumenta a precisão de ataques críticos.",
+                "quantidadeMaxima": 1,
+                "dano": 0,
+                "efeito": "Nenhum",
+                "preco": 500,
+                "raridade": "Lendário",
+                "tipo": "Anel"
+            }
+        }
     })
+
 
     return nome_do_alvo
 

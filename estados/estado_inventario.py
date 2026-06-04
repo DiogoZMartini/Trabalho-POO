@@ -7,14 +7,14 @@ class EstadoInventario(EstadoBase):
     def __init__(self, nomeJogador):
         super().__init__()
         self.nomeJogador = nomeJogador
-        self.inventario_hud = Inventario(self.nomeJogador)
+        self.inventario_hud = Inventario(nomeJogador, modo="padrao")
 
     def abrir(self):
         super().abrir()
-        self.inventario_hud.carregar_inventario()
+        self.inventario_hud.carregarInventario()
 
     def fechar(self):
-        self.inventario_hud.salvar_inventario()
+        self.inventario_hud.salvarInventario()
         super().fechar()
 
     def tratarEventos(self, eventos):
