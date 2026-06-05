@@ -28,10 +28,10 @@ class MenuPrincipal(EstadoBase):
         # 3. Se houve clique em qualquer momento do frame, checa as colisões
         if click:
             if self.start.collidepoint((mx, my)):
-                self.proximo_estado = "teste" 
+                self.proximo_estado = "Saves" 
                 self.concluido = True
             elif self.load.collidepoint((mx, my)):
-                self.proximo_estado = "teste" 
+                self.proximo_estado = "Saves" 
                 self.concluido = True
             elif self.quit.collidepoint((mx, my)):
                 pygame.quit()
