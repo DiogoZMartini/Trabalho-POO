@@ -17,6 +17,8 @@ class Saves(EstadoBase):
         self.save3 = pygame.Rect(450, 300, 150, 300)
         self.save3.center = (600, 300)
         self.voltar = pygame.Rect(20,20,40,40)
+        #guardar o save selecionado
+        self.slot_selecionado = 0
 
     def tratarEventos(self, lista_eventos):
         # 1. Pega a posição do mouse uma única vez no frame
@@ -33,19 +35,22 @@ class Saves(EstadoBase):
                 if event.button == 1: # Clique com botão esquerdo
                     click = True 
             # 3. Se houve clique em qualquer momento do frame, checa as colisões
-            if click:
-                if self.voltar.collidepoint((mx, my)):
-                    self.proximo_estado = "Menuprincipal" 
-                    self.concluido = True
-                elif self.save1.collidepoint((mx, my)):
-                    self.proximo_estado = "Newgame" 
-                    self.concluido = True
-                elif self.save2.collidepoint((mx, my)):
-                    self.proximo_estado = "Newgame" 
-                    self.concluido = True
-                elif self.save3.collidepoint((mx, my)):
-                    self.proximo_estado = "Newgame" 
-                    self.concluido = True
+        if click:
+            if self.voltar.collidepoint((mx, my)):
+                self.proximo_estado = "Menuprincipal" 
+                self.concluido = True
+            elif self.save1.collidepoint((mx, my)):
+                self.slot_selecionado = 1
+                self.proximo_estado = "Newgame" 
+                self.concluido = True
+            elif self.save2.collidepoint((mx, my)):
+                self.slot_selecionado = 2
+                self.proximo_estado = "Newgame" 
+                self.concluido = True
+            elif self.save3.collidepoint((mx, my)):
+                self.slot_selecionado = 3
+                self.proximo_estado = "Newgame" 
+                self.concluido = True
     def desenhar(self, tela):
         # Pinta o fundo
         tela.fill((40, 40, 50))
