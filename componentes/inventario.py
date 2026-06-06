@@ -26,17 +26,19 @@ class Inventario:
                 if itemDit:
                     self.inventario.append(self.dicionarioParaObjeto(itemDit))
             eqBanco = self.dadosJogador.get('equipamentos', {})
-            self.equipamentos = {k: None for k in ["Aapacete", "Aolar", "Arma", "Armadura", "Bota", "Anel"]}
+            self.equipamentos = {k: None for k in ["Capacete", "Colar", "Arma", "Armadura", "Bota", "Anel"]}
             for chave, itemDit in eqBanco.items():
                 if itemDit:
                     self.equipamentos[chave] = self.dicionarioParaObjeto(itemDit)
 
     def dicionarioParaObjeto(self, d):
-        return Item(
+        item = Item(
             nome=d['nome'], dano=d.get('dano', 0), descricao=d['descricao'],
             quantidadeMaxima=d.get('quantidadeMaxima', 1), efeito=d['efeito'],
             preco=d['preco'], raridade=d.get('raridade', 'Comum'), tipo=d['tipo']
         )
+        item.img = d.get('img', None)
+        return item
 
     def salvarInventario(self):
         if self.dadosJogador:
@@ -56,7 +58,8 @@ class Inventario:
         return {
             'nome': item.getNome(), 'dano': item.getDano(), 'descricao': item.getDescricao(),
             'quantidadeMaxima': item.getQuantidadeMaxima(), 'efeito': item.getEfeito(),
-            'preco': item.getPreco(), 'raridade': item.getRaridade(), 'tipo': item.getTipo()
+            'preco': item.getPreco(), 'raridade': item.getRaridade(), 'tipo': item.getTipo(),
+            'img': getattr(item, 'img', None)
         }
 
     def tratarEventos(self, eventos):
@@ -157,7 +160,18 @@ class Inventario:
             pygame.draw.rect(tela, corBorda, rectEq, border_radius=3)
             item = self.equipamentos.get(nomeEq)
             if item:
-                pygame.draw.rect(tela, (140, 140, 140), rectEq.inflate(-6, -6))
+                if hasattr(item, 'img') and item.img:
+                    try:
+                        imgSurface = pygame.image.load(item.imagem).convert_alpha()
+                        areaInterna = rectEq.inflate(-8, -8)
+                        imgRedimensionada = pygame.transform.scale(imgSurface, (areaInterna.width, areaInterna.height))
+                        tela.set_clip(areaInterna)
+                        tela.blit(imgRedimensionada, (areaInterna.x, areaInterna.y))
+                        tela.set_clip(None)
+                    except:
+                        pygame.draw.rect(tela, (140, 140, 140), rectEq.inflate(-6, -6))
+                else:
+                    pygame.draw.rect(tela, (140, 140, 140), rectEq.inflate(-6, -6))
             else:
                 txtSlug = fonteDesc.render(nomeEq[:4], True, (80, 80, 80))
                 tela.blit(txtSlug, (rectEq.x + 4, rectEq.y + 10))
@@ -185,56 +199,67 @@ class Inventario:
                 corBorda = (200, 200, 200) if focado else (90, 90, 90)
                 pygame.draw.rect(tela, corBorda, rectSlot, border_radius=4)
                 if idx < len(self.inventario):
-                    pygame.draw.rect(tela, (160, 160, 160), rectSlot.inflate(-6, -6), border_radius=2)
+                    itemMochila = self.inventario[idx]
+                    if hasattr(itemMochila, 'img') and itemMochila.img:
+                        try:
+                            imgSurface = pygame.image.load(itemMochila.img).convert_alpha()
+                            areaInternaMochila = rectSlot.inflate(-8, -8)
+                            imgRedimensionada = pygame.transform.scale(imgSurface, (areaInternaMochila.width,areaInternaMochila.height))
+                            tela.set_clip(areaInternaMochila)
+                            tela.blit(imgRedimensionada, (areaInternaMochila.x, areaInternaMochila.y))
+                            tela.set_clip(None)
+                        except:
+                            pygame.draw.rect(tela, (160, 160, 160), rectSlot.inflate(-6, -6), border_radius=2)
+                    else:
+                        pygame.draw.rect(tela, (160, 160, 160), rectSlot.inflate(-6, -6), border_radius=2)
 
         # Caixa de descrição
-            # Caixa de descrição
-            painelDesc = pygame.Rect(xBlocoItens, painelItens.bottom + 15, painelItens.width,altura - painelItens.bottom - 55)
-            pygame.draw.rect(tela, (35, 35, 35), painelDesc, border_radius=5)
-            itemParaDescrever = None
-            if self.tipoSlotSelecionado == "mochila" and self.slotSelecionado < len(self.inventario):
-                itemParaDescrever = self.inventario[self.slotSelecionado]
-            elif self.tipoSlotSelecionado == "equipamento":
-                itemParaDescrever = self.equipamentos.get(self.slotSelecionado)
+        painelDesc = pygame.Rect(xBlocoItens, painelItens.bottom + 15, painelItens.width,altura - painelItens.bottom - 55)
+        pygame.draw.rect(tela, (35, 35, 35), painelDesc, border_radius=5)
+        itemParaDescrever = None
+        if self.tipoSlotSelecionado == "mochila" and self.slotSelecionado < len(self.inventario):
+            itemParaDescrever = self.inventario[self.slotSelecionado]
+        elif self.tipoSlotSelecionado == "equipamento":
+            itemParaDescrever = self.equipamentos.get(self.slotSelecionado)
 
-            if not itemParaDescrever:
-                self.scroll_y = 0
-            if itemParaDescrever:
-                areaRecorte = painelDesc.inflate(-20, -20)
-                tela.set_clip(areaRecorte)
-                yAtual = areaRecorte.y + self.scroll_y
-                txtNome = fonteTitulo.render(itemParaDescrever.getNome(), True, (255, 215, 0))
-                tela.blit(txtNome, (areaRecorte.x, yAtual))
-                yAtual += 30
-                textoCompleto = itemParaDescrever.getDescricao()
-                palavras = textoCompleto.split(' ')
-                linhaAtual = ""
-                larguraMaxima = areaRecorte.width
-                for palavra in palavras:
-                    testarLinha = linhaAtual + palavra + " "
-                    if fonteDesc.size(testarLinha)[0] < larguraMaxima:
-                        linhaAtual = testarLinha
-                    else:
-                        txtLinha = fonteDesc.render(linhaAtual, True, (220, 220, 220))
-                        tela.blit(txtLinha, (areaRecorte.x, yAtual))
-                        yAtual += 20
-                        linhaAtual = palavra + " "
-                if linhaAtual:
+        if not itemParaDescrever:
+            self.scroll_y = 0
+        if itemParaDescrever:
+            areaRecorte = painelDesc.inflate(-20, -20)
+            tela.set_clip(areaRecorte)
+            yAtual = areaRecorte.y + self.scroll_y
+            txtNome = fonteTitulo.render(itemParaDescrever.getNome(), True, (255, 215, 0))
+            tela.blit(txtNome, (areaRecorte.x, yAtual))
+            yAtual += 30
+            textoCompleto = itemParaDescrever.getDescricao()
+            palavras = textoCompleto.split(' ')
+            linhaAtual = ""
+            larguraMaxima = areaRecorte.width
+            for palavra in palavras:
+                testarLinha = linhaAtual + palavra + " "
+                if fonteDesc.size(testarLinha)[0] < larguraMaxima:
+                    linhaAtual = testarLinha
+                else:
                     txtLinha = fonteDesc.render(linhaAtual, True, (220, 220, 220))
                     tela.blit(txtLinha, (areaRecorte.x, yAtual))
                     yAtual += 20
+                    linhaAtual = palavra + " "
+            if linhaAtual:
+                txtLinha = fonteDesc.render(linhaAtual, True, (220, 220, 220))
+                tela.blit(txtLinha, (areaRecorte.x, yAtual))
+                yAtual += 20
                 tela.set_clip(None)
                 alturaConteudoTotal = yAtual - (areaRecorte.y + self.scroll_y)
-                if alturaConteudoTotal > areaRecorte.height:
-                    canaletaRect = pygame.Rect(painelDesc.right - 12, painelDesc.y + 10, 6, painelDesc.height - 20)
-                    pygame.draw.rect(tela, (20, 20, 20), canaletaRect, border_radius=3)
-                    proporcao = areaRecorte.height / alturaConteudoTotal
-                    tamBotao = max(20, canaletaRect.height * proporcao)
-                    percentualRolagem = -self.scroll_y / (alturaConteudoTotal - areaRecorte.height)
-                    percentualRolagem = max(0.0, min(1.0, percentualRolagem))
-                    posYBotao = canaletaRect.y + (canaletaRect.height - tamBotao) * percentualRolagem
-                    botaoRect = pygame.Rect(canaletaRect.x, posYBotao, canaletaRect.width, tamBotao)
-                    pygame.draw.rect(tela, (100, 100, 100), botaoRect, border_radius=3)
+            if alturaConteudoTotal > areaRecorte.height:
+                canaletaRect = pygame.Rect(painelDesc.right - 12, painelDesc.y + 10, 6, painelDesc.height - 20)
+                pygame.draw.rect(tela, (20, 20, 20), canaletaRect, border_radius=3)
+                proporcao = areaRecorte.height / alturaConteudoTotal
+                tamBotao = max(20, canaletaRect.height * proporcao)
+                percentualRolagem = -self.scroll_y / (alturaConteudoTotal - areaRecorte.height)
+                percentualRolagem = max(0.0, min(1.0, percentualRolagem))
+                posYBotao = canaletaRect.y + (canaletaRect.height - tamBotao) * percentualRolagem
+                botaoRect = pygame.Rect(canaletaRect.x, posYBotao, canaletaRect.width, tamBotao)
+                pygame.draw.rect(tela, (100, 100, 100), botaoRect, border_radius=3)
 
     def desenharPaginaCombate(self, tela):
         largura, altura = tela.get_size()

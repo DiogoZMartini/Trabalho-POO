@@ -25,7 +25,7 @@ def inicializacaoDeCatalogos():
     tabela_inimigos.insert_multiple(lista_inimigos)
 
     lista_itens = [
-        {'nome':'Poção de Vida','descricao':'Uma poção de cura que cura 20 pontos de vida','quantidadeMaxima': 5,'efeito':'Cura','preco':12,'tipo':'Consumivel','raridade': 'Comum'},
+        {'nome':'Poção de Vida','descricao':'Uma poção de cura que cura 20 pontos de vida','quantidadeMaxima': 5,'efeito':'Cura','preco':12,'tipo':'Consumivel','raridade': 'Comum', 'img': 'assets/img/itens/pocaoDeVida'},
         {'nome':'Poção de Velocidade','descricao':'Uma poção que faz o seu próximo ataque atingir o alvo uma vez adicional','quantidadeMaxima':2,'efeito':'Segundo Ataque','preco':50,'tipo':'Consumivel','raridade': 'Comum'},
         {'nome':'Poção de dano','descricao':'Uma poção instável que ao jogar no inimigo causa 20 de dano','quantidadeMaxima':1,'efeito': 'Causa Dano','preco':25,'tipo':'Consumivel','raridade': 'Comum'},
         {'nome':'Espada de Madeira','descricao':'Uma espada de madeira','quantidadeMaxima':1,'efeito':'Aumenta o Dano','preco':14,'tipo':'Arma','raridade': 'Comum'},

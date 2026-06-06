@@ -20,7 +20,8 @@ def configurar_banco_para_teste():
                 "preco": 20,
                 "raridade": "Comum",
                 "tipo": "Consumivel",
-                "valor_efeito": 30
+                "valor_efeito": 30,
+                'img': "assets/img/itens/pocaoDeVida.jpg"
             },
             {
                 "nome": "Yelmo Lendário de Dragão",
