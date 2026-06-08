@@ -1,0 +1,45 @@
+# 1. No topo do arquivo (Imports):
+import pygame
+from .menupause import MenuPause
+
+# 2. Dentro do __init__ incluir:
+self.menu_pause = MenuPause()  
+self.pausado = False
+
+# Logo após o __init__ e antes do tratarEventos (Note os espaços na margem esquerda!)
+    def abrir(self):
+        self.concluido = False
+        self.pausado = False
+        # Limpa as variáveis do pause direto por aqui
+        self.menu_pause.concluido = False
+        self.menu_pause.pause = True
+
+
+# 3. No início do tratarEventos:
+if self.pausado:
+    # SE O JOGO ESTIVER PAUSADO: Redireciona tudo para o pop-up
+    self.menu_pause.tratarEventos(lista_eventos)
+    
+    # Se o jogador clicou em "Resume" dentro do pop-up, fecha o pause:
+    if not self.menu_pause.pause:
+        self.pausado = False 
+        self.menu_pause.pause = True # Reseta o menu de pause para a próxima vez
+        
+    # Se o jogador clicou em "Sair" dentro do pop-up, fecha o jogo/vai pro menu:
+    if self.menu_pause.concluido:
+        self.proximo_estado = self.menu_pause.proximo_estado
+        self.concluido = True
+    return # Bloqueia a gameplay enquanto estiver pausado
+
+# -------------------------------------------------------------------------
+# FLUXO NORMAL DE EVENTOS (O código de combate/interação dele continua aqui embaixo)
+# -------------------------------------------------------------------------
+
+# APERTANDO CAPSLOCK O PAUSE SERÁ INICIADO
+teclas = pygame.key.get_pressed()
+if teclas[pygame.K_CAPSLOCK]:
+    self.pausado = True
+
+# 4. No final do método desenhar(self, tela):
+if self.pausado:
+    self.menu_pause.desenhar(tela)

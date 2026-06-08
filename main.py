@@ -12,7 +12,7 @@ def main():
         "Menuprincipal": MenuPrincipal(),  
         "Saves": Saves(),
         "Newgame": NewGame(),
-        "Classes": Classes(),
+        "Classes": Classes(), 
         "Menupause": MenuPause()
     }
 
