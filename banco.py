@@ -25,11 +25,11 @@ def inicializacaoDeCatalogos():
     tabela_inimigos.insert_multiple(lista_inimigos)
 
     lista_itens = [
-        {'nome':'Poção de Vida','descricao':'Uma poção de cura que cura 20 pontos de vida','quantidadeMaxima': 5,'efeito':'Cura','preco':12,'tipo':'Consumivel','raridade': 'Comum', 'img': 'assets/img/itens/pocaoDeVida'},
-        {'nome':'Poção de Velocidade','descricao':'Uma poção que faz o seu próximo ataque atingir o alvo uma vez adicional','quantidadeMaxima':2,'efeito':'Segundo Ataque','preco':50,'tipo':'Consumivel','raridade': 'Comum'},
-        {'nome':'Poção de dano','descricao':'Uma poção instável que ao jogar no inimigo causa 20 de dano','quantidadeMaxima':1,'efeito': 'Causa Dano','preco':25,'tipo':'Consumivel','raridade': 'Comum'},
-        {'nome':'Espada de Madeira','descricao':'Uma espada de madeira','quantidadeMaxima':1,'efeito':'Aumenta o Dano','preco':14,'tipo':'Arma','raridade': 'Comum'},
-        {'nome':'Armadura de Couro','descricao':'Uma armadura de coiro','quantidadeMaxima':1,'efeito':'Aumenta a Defesa','preco':20,'tipo':'Armadura','raridade': 'Comum'}
+        {'nome':'Poção de Vida','descricao':'Uma poção de cura ao utilizar cura pontos de vida','quantidadeMaxima': 5,'efeito':'Cura','preco':12,'tipo':'Consumivel','raridade': 'Comum','img':'assets/img/itens/pocaoDeVida','uso':'Cura 20 de vida','dano':'0'},
+        {'nome':'Poção de Velocidade','descricao':'Uma poção que faz o seu próximo ataque atingir o alvo uma vez adicional','quantidadeMaxima':2,'efeito':'Segundo Ataque','preco':50,'tipo':'Consumivel','raridade': 'Comum','uso': 'Seu proximo ataque é usado 2x','dano':'0'},
+        {'nome':'Poção de dano','descricao':'Uma poção instável que ao jogar no inimigo causando dano','quantidadeMaxima':1,'efeito': 'Causa Dano','preco':25,'tipo':'Consumivel','raridade': 'Comum','uso':'Causa 20 de dano ao inimigo','dano':'20'},
+        {'nome':'Espada de Madeira','descricao':'Uma espada de madeira','quantidadeMaxima':1,'efeito':'Aumenta o Dano','preco':14,'tipo':'Arma','raridade': 'Comum','uso': '+5 de dano','dano':'5'},
+        {'nome':'Armadura de Couro','descricao':'Uma armadura de coiro','quantidadeMaxima':1,'efeito':'Aumenta a Defesa','preco':20,'tipo':'Armadura','raridade': 'Comum','uso': '+5 de defesa','dano':'-5'}
     ]
     tabela_itens.insert_multiple(lista_itens)
     print("Catálogo carregado com sucesso!")

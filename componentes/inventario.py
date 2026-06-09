@@ -32,13 +32,18 @@ class Inventario:
                     self.equipamentos[chave] = self.dicionarioParaObjeto(itemDit)
 
     def dicionarioParaObjeto(self, d):
-        item = Item(
-            nome=d['nome'], dano=d.get('dano', 0), descricao=d['descricao'],
-            quantidadeMaxima=d.get('quantidadeMaxima', 1), efeito=d['efeito'],
-            preco=d['preco'], raridade=d.get('raridade', 'Comum'), tipo=d['tipo']
+        return Item(
+            nome=d['nome'],
+            dano=d.get('dano', 0),
+            descricao=d['descricao'],
+            quantidadeMaxima=d.get('quantidadeMaxima', 1),
+            efeito=d['efeito'],
+            preco=d['preco'],
+            raridade=d.get('raridade', 'Comum'),
+            tipo=d['tipo'],
+            img=d.get('img', None),
+            uso=d.get('uso', None)
         )
-        item.img = d.get('img', None)
-        return item
 
     def salvarInventario(self):
         if self.dadosJogador:
@@ -139,6 +144,7 @@ class Inventario:
         # Fontes
         fonteTitulo = pygame.font.SysFont("Arial", 16, bold=True)
         fonteDesc = pygame.font.SysFont("Arial", 14)
+        fonteUso = pygame.font.SysFont("Arial", 13, bold=True, italic=True)
 
         # Painel de Equipamentos
         painelEq = pygame.Rect(20, 40, (largura // 2) - 30, altura - 80)
@@ -221,16 +227,19 @@ class Inventario:
             itemParaDescrever = self.inventario[self.slotSelecionado]
         elif self.tipoSlotSelecionado == "equipamento":
             itemParaDescrever = self.equipamentos.get(self.slotSelecionado)
-
         if not itemParaDescrever:
             self.scroll_y = 0
         if itemParaDescrever:
             areaRecorte = painelDesc.inflate(-20, -20)
             tela.set_clip(areaRecorte)
             yAtual = areaRecorte.y + self.scroll_y
+
+            # 1. Desenha o Nome do Item
             txtNome = fonteTitulo.render(itemParaDescrever.getNome(), True, (255, 215, 0))
             tela.blit(txtNome, (areaRecorte.x, yAtual))
             yAtual += 30
+
+            # 2. Processa e desenha a Descrição Padrão (com quebra de linha automática)
             textoCompleto = itemParaDescrever.getDescricao()
             palavras = textoCompleto.split(' ')
             linhaAtual = ""
@@ -247,9 +256,30 @@ class Inventario:
             if linhaAtual:
                 txtLinha = fonteDesc.render(linhaAtual, True, (220, 220, 220))
                 tela.blit(txtLinha, (areaRecorte.x, yAtual))
-                yAtual += 20
-                tela.set_clip(None)
-                alturaConteudoTotal = yAtual - (areaRecorte.y + self.scroll_y)
+                yAtual += 25
+
+            # ALTERADO: 3. Processa e desenha a seção de "Uso" se ela existir no item
+            if hasattr(itemParaDescrever, 'uso') and itemParaDescrever.uso:
+                textoUso = f"Efeito: {itemParaDescrever.uso}"
+                palavrasUso = textoUso.split(' ')
+                linhaUso = ""
+                for pal in palavrasUso:
+                    testarLinhaUso = linhaUso + pal + " "
+                    if fonteUso.size(testarLinhaUso)[0] < larguraMaxima:
+                        linhaUso = testarLinhaUso
+                    else:
+                        txtLinhaUso = fonteUso.render(linhaUso, True, (0, 230, 150))  # Cor verde/ciano para destaque
+                        tela.blit(txtLinhaUso, (areaRecorte.x, yAtual))
+                        yAtual += 18
+                        linhaUso = pal + " "
+                if linhaUso:
+                    txtLinhaUso = fonteUso.render(linhaUso, True, (0, 230, 150))
+                    tela.blit(txtLinhaUso, (areaRecorte.x, yAtual))
+                    yAtual += 18
+            tela.set_clip(None)
+            alturaConteudoTotal = yAtual - (areaRecorte.y + self.scroll_y)
+
+            # Barra de rolagem dinâmica ajustada para englobar a descrição + o uso
             if alturaConteudoTotal > areaRecorte.height:
                 canaletaRect = pygame.Rect(painelDesc.right - 12, painelDesc.y + 10, 6, painelDesc.height - 20)
                 pygame.draw.rect(tela, (20, 20, 20), canaletaRect, border_radius=3)

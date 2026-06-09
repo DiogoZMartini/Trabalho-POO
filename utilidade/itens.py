@@ -3,7 +3,7 @@ from classe import Geral
 import random
 
 class Item(Geral):
-    def __init__(self, nome, dano, descricao, quantidadeMaxima, efeito, preco, raridade, tipo, valorEfeito=20):
+    def __init__(self, nome, dano, descricao, quantidadeMaxima, efeito, preco, raridade, tipo, valorEfeito=20, img=None, uso=None):
         super().__init__(nome, dano)
         self.descricao = descricao
         self.quantidadeMaxima = quantidadeMaxima
@@ -12,6 +12,8 @@ class Item(Geral):
         self.raridade = raridade
         self.tipo = tipo
         self.valorEfeito = valorEfeito
+        self.img = img
+        self.uso = uso
 
     def getNome(self):
         return super().getNome()
@@ -31,6 +33,10 @@ class Item(Geral):
         return self.tipo
     def getValorEfeito(self):
         return self.valorEfeito
+    def getImg(self):
+        return self.img
+    def getUso(self):
+        return self.uso
     def setNome(self, nome):
         super().setNome(nome)
     def setDano(self, dano):
@@ -49,6 +55,10 @@ class Item(Geral):
         self.tipo = tipo
     def setValorEfeito(self, valorEfeito):
         self.valorEfeito = valorEfeito
+    def setImg(self, img):
+        self.img = img
+    def setUso(self, uso):
+        self.uso = uso
 
     def criarItemComRaridade (self,nomeBase, tipoItem, efeitoBase, valorBase):
         raridades = ["Comum", "Raro", "Épico", "Lendário"]
