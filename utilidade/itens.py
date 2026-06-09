@@ -1,9 +1,10 @@
-from tinydb import Query
 from classe import Geral
 import random
 
+
 class Item(Geral):
-    def __init__(self, nome, dano, descricao, quantidadeMaxima, efeito, preco, raridade, tipo, valorEfeito=20):
+    def __init__(self, nome, dano, descricao, quantidadeMaxima, efeito, preco, raridade, tipo, img=None,
+                 uso=None):
         super().__init__(nome, dano)
         self.descricao = descricao
         self.quantidadeMaxima = quantidadeMaxima
@@ -11,7 +12,8 @@ class Item(Geral):
         self.preco = preco
         self.raridade = raridade
         self.tipo = tipo
-        self.valorEfeito = valorEfeito
+        self.img = img
+        self.uso = uso
 
     def getNome(self):
         return super().getNome()
@@ -29,8 +31,10 @@ class Item(Geral):
         return self.raridade
     def getTipo(self):
         return self.tipo
-    def getValorEfeito(self):
-        return self.valorEfeito
+    def getImg(self):
+        return self.img
+    def getUso(self):
+        return self.uso
     def setNome(self, nome):
         super().setNome(nome)
     def setDano(self, dano):
@@ -47,54 +51,49 @@ class Item(Geral):
         self.raridade = raridade
     def setTipo(self, tipo):
         self.tipo = tipo
-    def setValorEfeito(self, valorEfeito):
-        self.valorEfeito = valorEfeito
+    def setImg(self, img):
+        self.img = img
+    def setUso(self, uso):
+        self.uso = uso
 
-    def criarItemComRaridade (self,nomeBase, tipoItem, efeitoBase, valorBase):
+    @classmethod
+    def criarItemComRaridade(cls, nomeBase, tipoItem, efeitoBase, valorBase):
         raridades = ["Comum", "Raro", "Épico", "Lendário"]
-        chances = [70,20,8,2]
+        chances = [70, 20, 8, 2]
         raridadeSorteada = random.choices(raridades, weights=chances, k=1)[0]
-        if raridadeSorteada == 'Comum':
-            multiplicador = 1.0
-        elif raridadeSorteada == "Raro":
-            multiplicador = 1.5
-        elif raridadeSorteada == "Épico":
-            multiplicador = 2.0
-        elif raridadeSorteada == "Lendário":
-            multiplicador = 3.0
+        multiplicadores = {"Comum": 1.0, "Raro": 1.5, "Épico": 2.0, "Lendário": 3.0}
+        multiplicador = multiplicadores[raridadeSorteada]
         valorFinal = int(valorBase * multiplicador)
-        return {
-            "nome": f"{nomeBase} ({raridadeSorteada})",
-            "descricao": f"Um item de tipo {tipoItem} e raridade {raridadeSorteada}",
-            "quantidadeMaxima": 5 if tipoItem == 'Consumivel' else 1,
-            "dano": valorFinal if tipoItem == 'Espada' else 0,
-            "efeito": efeitoBase,
-            "preco": int(valorBase * multiplicador * 1.2),
-            "raridade": raridadeSorteada,
-            "tipo": tipoItem,
-            "valor_efeito": valorFinal
-        }
+        qtdMax = 5 if tipoItem == 'Consumivel' else 1
+        return cls(
+            nome=f"{nomeBase} ({raridadeSorteada})",
+            dano=valorFinal,
+            descricao=f"Um item de tipo {tipoItem} e raridade {raridadeSorteada}",
+            quantidadeMaxima=qtdMax,
+            efeito=efeitoBase,
+            preco=int(valorBase * multiplicador * 1.2),
+            raridade=raridadeSorteada,
+            tipo=tipoItem,
+        )
 
-    def aplicarEfeitoItem(self,item, dadosJogador):
-        tipo = item.getTipo()
-        efeito = item.getEfeito()
-        poderDoEfeito = item.getValorEfeito()
+    def aplicarEfeitoItem(self, dadosJogador):
+        tipo = self.getTipo()
+        efeito = self.getEfeito()
         if tipo == 'Consumivel':
             if efeito == 'Cura':
-                vida_atual = dadosJogador['vida']
-                vida_maxima = dadosJogador['vidaMaxima']
+                poderCura = self.getDano()
+                vida_atual = dadosJogador.get('vida', 0)
+                vida_maxima = dadosJogador.get('vidaMaxima', 100)
                 if vida_atual >= vida_maxima:
                     print("Vida já está cheia!")
                     return False
-                dadosJogador['vida'] = min(vida_maxima, vida_atual + poderDoEfeito)
-                print(f"Curou! Vida atual: {dadosJogador['vida']}/{vida_maxima}")
+                dadosJogador['vida'] = min(vida_maxima, vida_atual + poderCura)
+                print(f"Curou! Vida atual: {dadosJogador['vida']}/{vida_maxima} (Recuperou {poderCura} PV)")
                 return True
-
             elif efeito == 'Segundo Ataque':
-                print(f"Buff de segundo ataque ativado com {item.getNome()}!")
+                print(f"Buff de segundo ataque ativado com {self.getNome()}!")
                 return True
-
             elif efeito == 'Causa Dano':
-                print(f"{item.getNome()} arremessada! Causará {poderDoEfeito} de dano no próximo turno.")
+                print(f"{self.getNome()} arremessada! Causará {self.getDano()} de dano no próximo turno.")
                 return True
         return False

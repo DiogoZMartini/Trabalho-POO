@@ -1,22 +1,71 @@
-import pygame
+from classe import Personagem
+from componentes.inventario import Inventario
 
-class Jogador:
-    def __init__(self,x,y):
-        self.forma = pygame.Rect(x, y, 300, 200)
-        self.velocidade = 300
-        self.x = float(x)
-        self.y = float(y)
-    def mover(self, comandos,dt):
-        deslocamento = self.velocidade * dt
-        if comandos[pygame.K_UP] or comandos[pygame.K_w]:
-            self.y -= deslocamento
-        if comandos[pygame.K_DOWN] or comandos[pygame.K_s]:
-            self.y += deslocamento
-        if comandos[pygame.K_LEFT] or comandos[pygame.K_a]:
-            self.x -= deslocamento
-        if comandos[pygame.K_RIGHT] or comandos[pygame.K_d]:
-            self.x += deslocamento
-        self.forma.x = int(self.x)
-        self.forma.y = int(self.y)
-    def desenhar(self, tela):
-        pygame.draw.rect(tela, (2, 120, 200), self.forma)
+class Jogador(Personagem):
+    def __init__(self, nome, dano, vida, lvl, recurso, exp, classe, dinheiro):
+        super().__init__(nome, dano, vida, lvl, recurso)
+        self.exp = exp
+        self.classe = classe
+        self.inv = Inventario(jogador=self, modo="padrao")
+        self.dinheiro = dinheiro
+
+    def getNome(self):
+        return super().getNome()
+    def getDano(self):
+        return super().getDano()
+    def getVida(self):
+        return super().getVida()
+    def getLvl(self):
+        return super().getLvl()
+    def getRecurso(self):
+        return super().getRecurso()
+    def getExp(self):
+        return self.exp
+    def getClasse(self):
+        return self.classe
+    def getInv(self):
+        return self.inv
+    def getDinheiro(self):
+        return self.dinheiro
+    def setNome(self, nome):
+        super().setNome(nome)
+    def setDano(self, dano):
+        super().setDano(dano)
+    def setVida(self, vida):
+        super().setVida(vida)
+    def setLvl(self, lvl):
+        super().setLvl(lvl)
+    def setRecurso(self, recurso):
+        super().setRecurso(recurso)
+    def setExp(self, exp):
+        self.exp = exp
+    def setClasse(self, classe):
+        self.classe = classe
+    def setInv(self, lista_itens):
+        if isinstance(lista_itens, list):
+            if hasattr(self, 'inv') and self.inv is not None:
+                self.inv.mochila = lista_itens
+        else:
+            self.inv = lista_itens
+    def setDinheiro(self, dinheiro):
+        self.dinheiro = dinheiro
+
+    def ataque(self, dano):
+        super().ataque(dano)
+
+    def ataqueSpe(self, dano):
+        super().ataqueSpe(dano)
+
+    def curarVida(self, dano):
+        super().curarVida(dano)
+
+    def tomarDano(self, dano):
+        super().tomarDano(dano)
+
+    def addItem(self, item):
+        if len(self.inv.mochila) < 15:
+            self.inv.mochila.append(item)
+            self.inv.salvarInventario()
+            return True
+        print("Mochila cheia! Não foi possível adicionar o item.")
+        return False
