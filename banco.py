@@ -35,4 +35,4 @@ def inicializacaoDeCatalogos():
     print("Catálogo carregado com sucesso!")
 
 def salvarJogo(nome, vida, vidaMaxima, lvl, exp, classe, inv, equipamentos, dinheiro):
-    tabela_jogador.upsert({'nome':nome,'vida':vida,'vidaMaxima': vidaMaxima,'lvl':lvl,'exp':exp,'classe':classe,'inv':inv, 'equipamentos':equipamentos,'dinheiro':dinheiro}, Query().name == nome)
+    tabela_jogador.upsert({'nome':nome,'vida':vida,'vidaMaxima': vidaMaxima,'lvl':lvl,'exp':exp,'classe':classe,'inv':inv, 'equipamentos':equipamentos,'dinheiro':dinheiro}, Query().nome == nome)

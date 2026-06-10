@@ -13,7 +13,7 @@ class GerenciadorJogo:
         self.estado_atual.abrir() # Executa o método de entrada da cena atual para garantir que suas variáveis internas sejam resetadas/iniciadas.
 
     def mudarEstado(self):
-        proximo = self.estado_atual.proximo_estado # Pergunta para a cena que está fechando qual é o nome (string) da próxima cena que deve abrir.
+        proximo = self.estado_atual.proximoEstado # Pergunta para a cena que está fechando qual é o nome (string) da próxima cena que deve abrir.
         self.estado_atual.fechar() # Executa a rotina de encerramento da cena atual (útil para salvar dados ou parar músicas daquela tela).
         self.nome_estado_atual=proximo # Atualiza a variável com o nome da nova cena que passará a comandar o jogo.
         self.estado_atual=self.estado[self.nome_estado_atual] # Vai no dicionário de estados, busca a nova cena pelo nome e substitui a cena ativa antiga por ela.

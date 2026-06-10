@@ -1,11 +1,11 @@
 from classe import Personagem
-from componentes.inventario import Inventario
 
 class Jogador(Personagem):
-    def __init__(self, nome, dano, vida, lvl, recurso, exp, classe, dinheiro):
-        super().__init__(nome, dano, vida, lvl, recurso)
+    def __init__(self, nome, dano, vida, lvl, recurso, spa, exp, classe, dinheiro, spaEnergia):
+        super().__init__(nome, dano, vida, lvl, recurso, spa, spaEnergia)
         self.exp = exp
         self.classe = classe
+        from componentes.inventario import Inventario
         self.inv = Inventario(jogador=self, modo="padrao")
         self.dinheiro = dinheiro
 
@@ -19,6 +19,8 @@ class Jogador(Personagem):
         return super().getLvl()
     def getRecurso(self):
         return super().getRecurso()
+    def getSpa(self):
+        return super().getSpa()
     def getExp(self):
         return self.exp
     def getClasse(self):
@@ -37,6 +39,8 @@ class Jogador(Personagem):
         super().setLvl(lvl)
     def setRecurso(self, recurso):
         super().setRecurso(recurso)
+    def setSpa(self, spa):
+        super().setSpa(spa)
     def setExp(self, exp):
         self.exp = exp
     def setClasse(self, classe):
@@ -69,3 +73,12 @@ class Jogador(Personagem):
             return True
         print("Mochila cheia! Não foi possível adicionar o item.")
         return False
+
+    def defesa(self):
+        defesaTotal = 0
+        slotsDeDefesa = ["Capacete", "Armadura", "Bota"]
+        for slot in slotsDeDefesa:
+            item = self.inv.equipamentos.get(slot)
+            if item:
+                defesaTotal += item.getDano()
+        return defesaTotal

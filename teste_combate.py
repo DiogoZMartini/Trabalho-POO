@@ -1,128 +1,134 @@
-# run_teste.py
 import os
+import sys
 import pygame
+
+# Garante que o Python encontre as pastas do projeto (entidades, estados, componentes, etc.)
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+
+# --- IMPORTS DO SEU SISTEMA ---
 from gerenciador import GerenciadorJogo
-from componentes.inventario import Inventario
-from banco import tabela_jogador, inicializacaoDeCatalogos
-from tinydb import Query
+from entidades.jogador import Jogador
+from estados.estado_combate import EstadoCombate
 
-class EstadoInventarioAdaptador:
-
-    def __init__(self, nome_jogador, modo="combate"):
-        self.inventario = Inventario(nome_jogador, modo)
-        self.concluido = False
-        self.proximo_estado = "Teste"
-
-    def abrir(self):
-        self.inventario.carregarInventario()
-        self.concluido = False
-
-    def fechar(self):
-        pass
-
-    def tratarEventos(self, eventos):
-        self.inventario.tratarEventos(eventos)
-        for evento in eventos:
-            if evento.type == pygame.KEYDOWN:
-                if evento.key == pygame.K_ESCAPE:
-                    self.concluido = True
-
-    def atualizar(self, dt):
-        pass
-
-    def desenhar(self, tela):
-        tela.fill((20, 20, 20))
-        self.inventario.desenhar(tela)
+# --- IMPORT DA CLASSE ITEM ---
+from utilidade.itens import Item
 
 
-class EstadoTesteDestino:
-    def abrir(self):
-        print("Sucesso: Transição de estado realizada!")
+def rodar_teste_combate():
+    # 1. Inicialização Padrão do Pygame
+    pygame.init()
+    pygame.font.init()
 
-    def fechar(self):
-        pass
+    largura, altura = 800, 600
+    tela = pygame.display.set_mode((largura, altura))
+    pygame.display.set_caption("RPG - Teste de Combate Rígido POO")
 
-    def tratarEventos(self, eventos):
-        pass
+    print("=== Inicializando Dados de Teste (Fluxo POO) ===")
 
-    def atualizar(self, dt):
-        pass
+    # 2. INSTANCIAÇÃO DOS OBJETOS DE ITENS
+    objeto_arma = Item(
+        nome="Espada de Aço (Épica)",
+        dano=5,
+        tipo="Arma",
+        descricao="Uma espada afiada feita de puro aço.",
+        quantidadeMaxima=1,
+        efeito="Nenhum",
+        preco=150,
+        raridade="Épica"
+    )
 
-    def desenhar(self, tela):
-        tela.fill((40, 120, 40))
+    objeto_amuleto = Item(
+        nome="Amuleto de Fogo",
+        dano=2,
+        tipo="Colar",
+        descricao="Um amuleto que pulsa com energia quente.",
+        quantidadeMaxima=1,
+        efeito="Dano de Fogo",
+        preco=200,
+        raridade="Raro"
+    )
 
+    objeto_anel = Item(
+        nome="Anel do Guerreador",
+        dano=2,
+        tipo="Anel",
+        descricao="Um anel pesado de ferro.",
+        quantidadeMaxima=1,
+        efeito="Nenhum",
+        preco=50,
+        raridade="Comum"
+    )
 
-def configurar_banco_para_teste():
-    inicializacaoDeCatalogos()
+    # 3. DADOS BASE DO JOGADOR
+    dados_jogador_ficticio = {
+        "nome": "Diogo Herói",
+        "dano": 2,
+        "vida": 120,
+        "lvl": 3,
+        "recurso": 50,
+        "exp": 120,
+        "classe": "Guerreiro",
+        "dinheiro": 350,
+        "spa": "Impacto Devastador"
+    }
 
-    nome_do_alvo = "Artorias"
-    tabela_jogador.remove(Query().nome == nome_do_alvo)
-    tabela_jogador.insert({
-        "nome": nome_do_alvo,
-        "vida": 85,
-        "vidaMaxima": 100,
-        "lvl": 12,
-        "dinheiro": 1350,
-        "inv": [
-            {
-                "nome": "Poção de Vida",
-                "descricao": "Uma poção de cura ao utilizar cura pontos de vida",
-                "quantidadeMaxima": 5,
-                "efeito": "Cura",
-                "preco": 12,
-                "tipo": "Consumivel",
-                "raridade": "Comum",
-                "uso": "Cura 20 de vida",
-                "dano": 0
-            },
-            {
-                "nome": "Poção de dano",
-                "descricao": "Uma poção instável que ao jogar no inimigo causando dano",
-                "quantidadeMaxima": 1,
-                "efeito": "Causa Dano",
-                "preco": 25,
-                "tipo": "Consumivel",
-                "raridade": "Comum",
-                "uso": "Causa 20 de dano ao inimigo",
-                "dano": 20
-            }
-        ],
-        "equipamentos": {
-            "capacete": None,
-            "colar": None,
-            "arma": {
-                "nome": "Espada de Madeira",
-                "descricao": "Uma espada de madeira de treino.",
-                "quantidadeMaxima": 1,
-                "efeito": "Aumenta o Dano",
-                "preco": 14,
-                "tipo": "Arma",
-                "raridade": "Comum",
-                "uso": "+5 de dano",
-                "dano": 5
-            },
-            "armadura": None,
-            "bota": None,
-            "anel": None
-        }
-    })
-    return nome_do_alvo
+    # 4. CRIAÇÃO DO OBJETO JOGADOR
+    objetoJogador = Jogador(
+        nome=dados_jogador_ficticio["nome"],
+        dano=dados_jogador_ficticio["dano"],
+        vida=dados_jogador_ficticio["vida"],
+        lvl=dados_jogador_ficticio["lvl"],
+        recurso=dados_jogador_ficticio["recurso"],
+        exp=dados_jogador_ficticio["exp"],
+        classe=dados_jogador_ficticio["classe"],
+        dinheiro=dados_jogador_ficticio["dinheiro"],
+        spa=dados_jogador_ficticio["spa"],
+        spaEnergia=0
+    )
+
+    # 5. ASSIGNAÇÃO RÍGIDA DOS OBJETOS NO INVENTÁRIO DO JOGADOR
+    objetoJogador.inv.equipamentos = {
+        "Arma": objeto_arma,
+        "Colar": objeto_amuleto,
+        "Anel": objeto_anel
+    }
+
+    print(f"Jogador '{objetoJogador.getNome()}' criado com sucesso!")
+
+    # 6. CONFIGURAÇÃO DO GERENCIADOR DE JOGO
+    telaCombate = EstadoCombate(objetoJogador)
+    dicionario_estados = {"Combate": telaCombate}
+
+    # PASSANDO POR POSIÇÃO (Sem usar nomes de argumentos como 'tela=')
+    # Ordem padrão baseada nos seus erros anteriores:
+    # 1º: A tela do Pygame
+    # 2º: A altura (600)
+    # 3º: O título ("RPG - Teste de Combate")
+    # 4º: O dicionário de estados
+    # 5º: A string do estado inicial
+    try:
+        jogo = GerenciadorJogo(
+            tela,
+            altura,
+            "RPG - Teste de Combate",
+            dicionario_estados,
+            "Combate"
+        )
+    except TypeError:
+        # CASO DÊ ERRO DE ORDEM: Se o seu construtor começar com largura e altura, tenta essa alternativa:
+        jogo = GerenciadorJogo(
+            largura,
+            altura,
+            "RPG - Teste de Combate",
+            dicionario_estados,
+            "Combate"
+        )
+
+    print("\n[SUCESSO] Sistema pronto! Iniciando Loop de Combate...\n")
+
+    # 7. INICIA O LOOP DO JOGO
+    jogo.rodar()
 
 
 if __name__ == "__main__":
-    nome_jogador = configurar_banco_para_teste()
-    tela_inventario_estado = EstadoInventarioAdaptador(nome_jogador, modo="combate")
-    dicionario_estados = {
-        "Inventario": tela_inventario_estado,
-        "Teste": EstadoTesteDestino()
-    }
-    print("Inicializando teste com o seu GerenciadorJogo em modo 'combate'...")
-    jogo = GerenciadorJogo(
-        largura=800,
-        altura=600,
-        titulo="Testando Interface de Combate - Estilo Clássico",
-        estado=dicionario_estados,
-        estado_inicial="Inventario"
-    )
-
-    jogo.rodar()
+    rodar_teste_combate()
