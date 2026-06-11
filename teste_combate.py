@@ -25,7 +25,7 @@ def rodar_teste_combate():
 
     print("=== Inicializando Dados de Teste (Fluxo POO) ===")
 
-    # 2. INSTANCIAÇÃO DOS OBJETOS DE ITENS
+    # 2. INSTANCIAÇÃO DOS OBJETOS DE ITENS (EQUIPAMENTOS)
     objeto_arma = Item(
         nome="Espada de Aço (Épica)",
         dano=1,
@@ -59,11 +59,63 @@ def rodar_teste_combate():
         raridade="Comum"
     )
 
+    # =================================================================
+    # CONSUMÍVEIS PARA A MOCHILA (EFEITO ALTERADO PARA "Cura")
+    # =================================================================
+    pocao_vida = Item(
+        nome="Poção de Vida P",
+        dano=30,  # O poder de cura é definido pelo "dano" no seu sistema original
+        tipo="Consumivel",
+        descricao="Recupera 30 pontos de vida instantaneamente.",
+        quantidadeMaxima=5,
+        efeito="Cura",  # ALTERADO: Agora bate certinho com o if do itens.py
+        preco=25,
+        raridade="Comum",
+        uso="Cura 30 HP"
+    )
+
+    elixir_energia = Item(
+        nome="Elixir de Energia",
+        dano=0,
+        tipo="Consumivel",
+        descricao="Restaura totalmente seus pontos de recurso.",
+        quantidadeMaxima=3,
+        efeito="RestauraRecurso",
+        preco=45,
+        raridade="Incomum",
+        uso="Restaura Recurso"
+    )
+
+    bombinha = Item(
+        nome="Bomba de Fumaça",
+        dano=15,
+        tipo="Consumivel",
+        descricao="Causa 15 de dano fixo e confunde o inimigo.",
+        quantidadeMaxima=2,
+        efeito="Causa Dano",  # Ajustado para bater com seu itens.py padrão
+        preco=60,
+        raridade="Raro",
+        uso="Causa 15 de Dano"
+    )
+
+    antidoto = Item(
+        nome="Antídoto",
+        dano=0,
+        tipo="Consumivel",
+        descricao="Cura qualquer efeito de veneno ou status negativo.",
+        quantidadeMaxima=5,
+        efeito="CuraStatus",
+        preco=15,
+        raridade="Comum",
+        uso="Cura Veneno"
+    )
+
     # 3. DADOS BASE DO JOGADOR
     dados_jogador_ficticio = {
         "nome": "Diogo Herói",
-        "dano": 0,
-        "vida": 120,
+        "dano": 1,
+        "vida": 80,         # Iniciamos com 80 para poder testar a cura até 120!
+        "vidaMaxima": 120,   # Guardamos a referência do limite máximo
         "lvl": 3,
         "recurso": 50,
         "exp": 120,
@@ -88,24 +140,39 @@ def rodar_teste_combate():
 
     # 5. ASSIGNAÇÃO RÍGIDA DOS OBJETOS NO INVENTÁRIO DO JOGADOR
     objetoJogador.inv.equipamentos = {
-        "Arma": objeto_arma,
+        "Capacete": None,
         "Colar": objeto_amuleto,
+        "Arma": objeto_arma,
+        "Armadura": None,
+        "Bota": None,
         "Anel": objeto_anel
     }
 
+    # Injeta os itens na mochila do inventário gráfico
+    objetoJogador.inv.mochila = [
+        pocao_vida,
+        elixir_energia,
+        bombinha,
+        antidoto
+    ]
+
+    # Sincroniza a lista de itens com a entidade Jogador
+    objetoJogador.setInv(objetoJogador.inv.mochila)
+
+    # INJEÇÃO CRUCIAL: Alimenta o dicionário interno do inventário para simular o banco
+    objetoJogador.inv.dadosJogador = {
+        "nome": dados_jogador_ficticio["nome"],
+        "vida": dados_jogador_ficticio["vida"],
+        "vidaMaxima": dados_jogador_ficticio["vidaMaxima"]
+    }
+
     print(f"Jogador '{objetoJogador.getNome()}' criado com sucesso!")
+    print(f"Mochila populada com {len(objetoJogador.inv.mochila)} consumíveis para teste.")
 
     # 6. CONFIGURAÇÃO DO GERENCIADOR DE JOGO
     telaCombate = EstadoCombate(objetoJogador)
     dicionario_estados = {"Combate": telaCombate}
 
-    # PASSANDO POR POSIÇÃO (Sem usar nomes de argumentos como 'tela=')
-    # Ordem padrão baseada nos seus erros anteriores:
-    # 1º: A tela do Pygame
-    # 2º: A altura (600)
-    # 3º: O título ("RPG - Teste de Combate")
-    # 4º: O dicionário de estados
-    # 5º: A string do estado inicial
     try:
         jogo = GerenciadorJogo(
             tela,
@@ -115,7 +182,6 @@ def rodar_teste_combate():
             "Combate"
         )
     except TypeError:
-        # CASO DÊ ERRO DE ORDEM: Se o seu construtor começar com largura e altura, tenta essa alternativa:
         jogo = GerenciadorJogo(
             largura,
             altura,

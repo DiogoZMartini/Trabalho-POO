@@ -35,8 +35,18 @@ class EstadoCombate(EstadoBase):
 
     def tratarEventos(self, eventos):
         if self.jogador.inv:
-            self.jogador.inv.tratarEventos(eventos)
-
+            retornoInventario = self.jogador.inv.tratarEventos(eventos)
+            if retornoInventario == "itemUsado":
+                self.exibindoBolsa = False
+                self.turnoInimigo()
+                return
+        if hasattr(self, 'exibindoBolsa') and self.exibindoBolsa:
+            ponteiroMouse = pygame.mouse.get_pos()
+            resultadoFoco = self.jogador.inv.obterSlotPorPosicao(ponteiroMouse)
+            if resultadoFoco:
+                self.jogador.inv.tipoSlotSelecionado, self.jogador.inv.slotSelecionado = resultadoFoco
+            else:
+                self.jogador.inv.tipoSlotSelecionado, self.jogador.inv.slotSelecionado = None, None
         for evento in eventos:
             if evento.type == pygame.KEYDOWN:
                 if evento.key == pygame.K_ESCAPE:
@@ -80,13 +90,17 @@ class EstadoCombate(EstadoBase):
                     self.turnoInimigo()
                 else:
                     self.acaoAtiva = "erro_especial"
-            case "ITENS":
-                print("\n[INVENTÁRIO] Abrindo bolsa de consumíveis no combate...")
-                # Aqui vai a lógica para abrir o mini-menu de poções ou bombinhas
-                self.turnoInimigo()
+            case "ITEM":
+                if not hasattr(self, 'exibindoBolsa'):
+                    self.exibindoBolsa = False
+                self.exibindoBolsa = not self.exibindoBolsa
+                if self.exibindoBolsa:
+                    print("\n[INVENTÁRIO] Abrindo bolsa de consumíveis no combate...")
+            case "VOLTARMENU":
+                self.exibindoBolsa = False
+                print("[COMBATE] Retornando ao menu principal de ações.")
             case "FUGIR":
                 print("\n[FUGA] Você tenta escapar da batalha!")
-                # Aqui vai a lógica de sorteio de fuga (ex: random.random() > 0.5)
             case _:
                 print(f"Aviso: Ação desconhecida recebida no combate: {acao}")
 
@@ -161,6 +175,7 @@ class EstadoCombate(EstadoBase):
         tela.blit(nomeInimigoTxt, (rectHudInimigo.x + 10, rectHudInimigo.y + 5))
 
         # Barra de Vida Inimigo
+
         vidaAtualInimigo = self.inimigo.getVida()
         vidaMaximaInimigo = self.inimigo.getVidaMaxima()
         proporcaoVidaInimigo = max(0.0, min(1.0, vidaAtualInimigo / vidaMaximaInimigo))
@@ -174,6 +189,7 @@ class EstadoCombate(EstadoBase):
         pygame.draw.rect(tela, (255, 215, 0), (posicaoSpaInimigo[0], posicaoSpaInimigo[1],posicaoSpaInimigo[2] * max(0.0,min(1.0, self.inimigo.getSpaEnergia() / 5)),posicaoSpaInimigo[3]))
 
         # Bonecos
+
         rectBonecoJogador = pygame.Rect(50, 120, 250, 300)
         pygame.draw.rect(tela, (70, 70, 70), rectBonecoJogador, border_radius=10)
         pygame.draw.rect(tela, corBorda, rectBonecoJogador, 2, border_radius=10)
@@ -186,6 +202,7 @@ class EstadoCombate(EstadoBase):
         tela.blit(txtBonecoInim,(rectBonecoInimigo.centerx - txtBonecoInim.get_width() // 2, rectBonecoInimigo.centery))
 
         # Painéis inferiores
+
         alturaPainelInferior = 150
         rectPainelDescricao = pygame.Rect(0, alturaTela - alturaPainelInferior, larguraTela // 2, alturaPainelInferior)
         rectPainelAcoes = pygame.Rect(larguraTela // 2, alturaTela - alturaPainelInferior, larguraTela // 2,alturaPainelInferior)
@@ -193,61 +210,98 @@ class EstadoCombate(EstadoBase):
         pygame.draw.rect(tela, (45, 45, 45), rectPainelAcoes)
         pygame.draw.rect(tela, corBorda, rectPainelDescricao, 3)
         pygame.draw.rect(tela, corBorda, rectPainelAcoes, 3)
-        opcoesMenu = [
-            {"nome": "ATAQUE", "id": "ataque"},
-            {"nome": "ITEM", "id": "item"},
-            {"nome": "HABILIDADE", "id": "habilidade"},
-            {"nome": "FUGIR", "id": "fugir"}
-        ]
         posicaoMouse = pygame.mouse.get_pos()
         acaoFocada = None
-        self.jogador.inv.slotsRegiao = []
-        for i, opcao in enumerate(opcoesMenu):
-            coluna = i % 2
-            linha = i // 2
-            xBotao = rectPainelAcoes.x + 40 + (coluna * 180)
-            yBotao = rectPainelAcoes.y + 30 + (linha * 50)
-            rectBotao = pygame.Rect(xBotao, yBotao, 150, 35)
-            self.jogador.inv.slotsRegiao.append((rectBotao, "botaoCombate", opcao["id"]))
-            corTexto = (255, 255, 255)
-            if rectBotao.collidepoint(posicaoMouse):
-                acaoFocada = opcao["id"]
-                corTexto = (255, 215, 0)
-                if self.acaoAtiva == "erroEspecial" and acaoFocada != "habilidade":
-                    self.acaoAtiva = None
-                pygame.draw.polygon(tela, corTexto, [
-                    (xBotao - 15, yBotao + 10),
-                    (xBotao - 15, yBotao + 25),
-                    (xBotao - 5, yBotao + 17)
-                ])
-            txtOpcao = fonteGrande.render(opcao["nome"], True, corTexto)
-            tela.blit(txtOpcao, (xBotao, yBotao))
-        acaoFinalParaRenderizar = self.acaoAtiva if self.acaoAtiva else acaoFocada
+        if not hasattr(self, 'exibindoBolsa'):
+            self.exibindoBolsa = False
+        if self.exibindoBolsa:
+            self.jogador.inv.slotsRegiao = []
+            self.jogador.inv.desenhar(tela)
+            xVoltar = rectPainelAcoes.x + rectPainelAcoes.width - 95
+            yVoltar = rectPainelAcoes.y + rectPainelAcoes.height - 32
+            rectVoltar = pygame.Rect(xVoltar, yVoltar, 80, 22)
+            self.jogador.inv.slotsRegiao.append((rectVoltar, "botaoCombate", "voltarMenu"))
+            corBotaoVoltar = (150, 30, 30)
+            corTextoVoltar = (240, 240, 240)
+            if rectVoltar.collidepoint(posicaoMouse):
+                corBotaoVoltar = (190, 40, 40)
+                acaoFocada = "voltarMenu"
+            pygame.draw.rect(tela, corBotaoVoltar, rectVoltar, border_radius=3)
+            pygame.draw.rect(tela, corBorda, rectVoltar, 1, border_radius=3)
+            txtVoltar = fonteMedia.render("VOLTAR", True, corTextoVoltar)
+            tela.blit(txtVoltar, (rectVoltar.centerx - txtVoltar.get_width() // 2,rectVoltar.centery - txtVoltar.get_height() // 2))
+            resultadoFoco = self.jogador.inv.obterSlotPorPosicao(posicaoMouse)
+            if resultadoFoco:
+                self.jogador.inv.tipoSlotSelecionado, self.jogador.inv.slotSelecionado = resultadoFoco
+            else:
+                self.jogador.inv.tipoSlotSelecionado, self.jogador.inv.slotSelecionado = None, None
+            idxFocado = self.jogador.inv.slotSelecionado
+            if self.jogador.inv.tipoSlotSelecionado == "mochila" and idxFocado is not None:
+                if idxFocado < len(self.jogador.inv.mochila):
+                    acaoFocada = self.jogador.inv.mochila[idxFocado]
+        else:
+            opcoesMenu = [
+                {"nome": "ATAQUE", "id": "ataque"},
+                {"nome": "ITEM", "id": "item"},
+                {"nome": "HABILIDADE", "id": "habilidade"},
+                {"nome": "FUGIR", "id": "fugir"}
+            ]
+            self.jogador.inv.slotsRegiao = []
+            for i, opcao in enumerate(opcoesMenu):
+                coluna = i % 2
+                linha = i // 2
+                xBotao = rectPainelAcoes.x + 40 + (coluna * 180)
+                yBotao = rectPainelAcoes.y + 30 + (linha * 50)
+                rectBotao = pygame.Rect(xBotao, yBotao, 150, 35)
+                self.jogador.inv.slotsRegiao.append((rectBotao, "botaoCombate", opcao["id"]))
+                corTexto = (255, 255, 255)
+                if rectBotao.collidepoint(posicaoMouse):
+                    acaoFocada = opcao["id"]
+                    corTexto = (255, 215, 0)
+                    if getattr(self, 'acaoAtiva', None) == "erro_especial" and acaoFocada != "habilidade":
+                        self.acaoAtiva = None
+                    pygame.draw.polygon(tela, corTexto, [
+                        (xBotao - 15, yBotao + 10),
+                        (xBotao - 15, yBotao + 25),
+                        (xBotao - 5, yBotao + 17)
+                    ])
+                txtOpcao = fonteGrande.render(opcao["nome"], True, corTexto)
+                tela.blit(txtOpcao, (xBotao, yBotao))
+        acaoFinalParaRenderizar = getattr(self, 'acaoAtiva', None) if getattr(self, 'acaoAtiva', None) else acaoFocada
         self.renderizarDescricao(tela, rectPainelDescricao, acaoFinalParaRenderizar, fonteMedia, fontePequena)
 
     def renderizarDescricao(self, tela, rect, acao, fonteTitulo, fonteCorpo, corTexto=(200, 200, 200)):
         margem = 20
         titulo = "Menu de Combate"
         corpo = "Passe o mouse sobre uma opção para ver os detalhes."
-        match acao:
-            case "ataque":
-                titulo = "Ação: Ataque Físico"
-                corpo = "Ataca o inimigo com sua arma principal causando dano baseado em sua força."
-            case "item":
-                titulo = "Ação: Usar Item"
-                corpo = "Abre sua mochila para utilizar poções de cura ou itens de suporte."
-            case "habilidade":
-                titulo = "Ação: Habilidade Especial"
-                corpo = f"Gasta seus pontos de {self.jogador.getClasse()} para realizar um golpe devastador."
-            case "fugir":
-                titulo = "Ação: Escapar"
-                corpo = "Tenta fugir da batalha. Sucesso baseado na diferença de nível e sorte."
-            case "erroEspecial":
-                titulo = "Aviso: Especial Bloqueado"
-                corpo = "Você precisa ter a barra de especial cheia para utilizar a habilidade"
-                corTexto = (255, 0, 0)
-            case _:
-                pass
+        if acao and not isinstance(acao, str):
+            titulo = acao.getNome()
+            corpo = acao.getDescricao()
+            if hasattr(acao, 'uso') and acao.uso:
+                corpo += f" (efeito: {acao.uso})"
+        else:
+            match acao:
+                case "ataque":
+                    titulo = "Ação: Ataque Físico"
+                    corpo = "Ataca o inimigo com sua arma principal causando dano baseado em sua força."
+                case "item":
+                    titulo = "Ação: Usar Item"
+                    corpo = "Abre sua mochila para utilizar poções de cura ou itens de suporte."
+                case "habilidade":
+                    titulo = "Ação: Habilidade Especial"
+                    corpo = f"Gasta seus pontos de {self.jogador.getClasse()} para realizar um golpe devastador."
+                case "fugir":
+                    titulo = "Ação: Escapar"
+                    corpo = "Tenta fugir da batalha. Sucesso baseado na diferença de nível e sorte."
+                case "voltarMenu":
+                    titulo = "Voltar ao Menu"
+                    corpo = "Fecha a mochila e retorna para as opções de ataque e habilidades sem gastar seu turno."
+                case "erroEspecial":
+                    titulo = "Aviso: Especial Bloqueado"
+                    corpo = "Você precisa ter a barra de especial cheia para utilizar a habilidade"
+                    corTexto = (255, 0, 0)
+                case _:
+                    pass
         txtTit = fonteTitulo.render(titulo, True, (255, 215, 0))
         tela.blit(txtTit, (rect.x + margem, rect.y + margem))
         palavras = corpo.split(' ')

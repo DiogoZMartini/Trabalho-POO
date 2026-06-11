@@ -116,7 +116,7 @@ def configurar_banco_para_teste():
                 "raridade": "Comum",
                 "img": "assets/img/itens/elmo_ferro.png",
                 "uso": "+3 de armadura",
-                "dano": 0
+                "dano": -3
             },
             "Colar": {
                 "nome": "Amuleto de Rubi (Raro)",
