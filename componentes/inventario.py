@@ -269,7 +269,7 @@ class Inventario:
                 tela.blit(txtLinha, (areaRecorte.x, yAtual))
                 yAtual += 25
 
-            # ALTERADO: 3. Processa e desenha a seção de "Uso" se ela existir no item
+            # 3. Processa e desenha a seção de "Uso" se ela existir no item
             if hasattr(itemParaDescrever, 'uso') and itemParaDescrever.uso:
                 textoUso = f"Efeito: {itemParaDescrever.uso}"
                 palavrasUso = textoUso.split(' ')

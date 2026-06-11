@@ -28,7 +28,7 @@ def rodar_teste_combate():
     # 2. INSTANCIAÇÃO DOS OBJETOS DE ITENS
     objeto_arma = Item(
         nome="Espada de Aço (Épica)",
-        dano=5,
+        dano=1,
         tipo="Arma",
         descricao="Uma espada afiada feita de puro aço.",
         quantidadeMaxima=1,
@@ -39,7 +39,7 @@ def rodar_teste_combate():
 
     objeto_amuleto = Item(
         nome="Amuleto de Fogo",
-        dano=2,
+        dano=1,
         tipo="Colar",
         descricao="Um amuleto que pulsa com energia quente.",
         quantidadeMaxima=1,
@@ -50,7 +50,7 @@ def rodar_teste_combate():
 
     objeto_anel = Item(
         nome="Anel do Guerreador",
-        dano=2,
+        dano=1,
         tipo="Anel",
         descricao="Um anel pesado de ferro.",
         quantidadeMaxima=1,
@@ -62,7 +62,7 @@ def rodar_teste_combate():
     # 3. DADOS BASE DO JOGADOR
     dados_jogador_ficticio = {
         "nome": "Diogo Herói",
-        "dano": 2,
+        "dano": 0,
         "vida": 120,
         "lvl": 3,
         "recurso": 50,
