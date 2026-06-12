@@ -20,16 +20,16 @@ class Saves(EstadoBase):
         #guardar o save selecionado
         self.slot_selecionado = 0
 
-    def tratarEventos(self, lista_eventos):
+    def tratarEventos(self, listaEventos):
         # 1. Pega a posição do mouse uma única vez no frame
         mx, my = pygame.mouse.get_pos()
         click = False
         
         # 2. Varre a lista de eventos que o Gerenciador passou
-        for event in lista_eventos:
+        for event in listaEventos:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    self.proximo_estado = "Menuprincipal" 
+                    self.proximoEstado = "MenuPrincipal"
                     self.concluido = True
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1: # Clique com botão esquerdo
@@ -37,19 +37,19 @@ class Saves(EstadoBase):
             # 3. Se houve clique em qualquer momento do frame, checa as colisões
         if click:
             if self.voltar.collidepoint((mx, my)):
-                self.proximo_estado = "Menuprincipal" 
-                self.concluido = True
+                self.proximoEstado = "MenuPrincipal"
+                self.concproximoEstadoluido = True
             elif self.save1.collidepoint((mx, my)):
                 self.slot_selecionado = 1
-                self.proximo_estado = "Newgame" 
+                self.proximoEstado = "NewGame"
                 self.concluido = True
             elif self.save2.collidepoint((mx, my)):
                 self.slot_selecionado = 2
-                self.proximo_estado = "Newgame" 
+                self.proximoEstado = "NewGame"
                 self.concluido = True
             elif self.save3.collidepoint((mx, my)):
                 self.slot_selecionado = 3
-                self.proximo_estado = "Newgame" 
+                self.proximoEstado = "NewGame"
                 self.concluido = True
     def desenhar(self, tela):
         # Pinta o fundo

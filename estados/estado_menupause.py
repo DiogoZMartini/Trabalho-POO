@@ -19,13 +19,13 @@ class MenuPause(EstadoBase):
         self.caixa_pop = pygame.Rect(0, 0, 400, 550)
         #Centraliza ela no meio da tela (400, 300)
         self.caixa_pop.center = (400, 300)
-    def tratarEventos(self, lista_eventos):
+    def tratarEventos(self, listaEventos):
         # 1. Pega a posição do mouse uma única vez no frame
         mx, my = pygame.mouse.get_pos()
         click = False
         
         # 2. Varre a lista de eventos que o Gerenciador passou
-        for event in lista_eventos:
+        for event in listaEventos:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1: # Clique com botão esquerdo
                     click = True 

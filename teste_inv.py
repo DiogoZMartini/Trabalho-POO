@@ -231,7 +231,7 @@ if __name__ == "__main__":
         altura=600,
         titulo="Testando Estado de Inventario",
         estado=dicionario_estados,
-        estado_inicial="Inventario"
+        estadoInicial="Inventario"
     )
 
     jogo.rodar()

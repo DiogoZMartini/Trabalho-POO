@@ -17,17 +17,17 @@ class NewGame(EstadoBase):
         self.confirmar.center = (400, 550)
         self.voltar = pygame.Rect(20, 20, 40, 40)
 
-    def tratarEventos(self, lista_eventos):
+    def tratarEventos(self, listaEventos):
         # 1. Pega a posição do mouse uma única vez no frame
         mx, my = pygame.mouse.get_pos()
         click = False
         
         # 2. Varre a lista de eventos que o Gerenciador passou
-        for event in lista_eventos:
+        for event in listaEventos:
             # CORREÇÃO: Toda a checagem de teclado deve ficar DENTRO deste bloco KEYDOWN
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    self.proximo_estado = "Saves" 
+                    self.proximoEstado = "Saves"
                     self.concluido = True
                 # apagar letras do nome
                 elif event.key == pygame.K_BACKSPACE:
@@ -35,7 +35,7 @@ class NewGame(EstadoBase):
                 else:
                     if event.unicode.isprintable() and len(self.nome_jogador) < 15:
                         self.nome_jogador += event.unicode
-            
+
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1: # Clique com botão esquerdo
                     click = True 
@@ -43,12 +43,12 @@ class NewGame(EstadoBase):
             # 3. Se houve clique em qualquer momento do frame, checa as colisões
             if click:
                 if self.voltar.collidepoint((mx, my)):
-                    self.proximo_estado = "Saves" 
+                    self.proximoEstado = "Saves"
                     self.concluido = True
                 # AJUSTE: Mudei para self.confirmar para fazer sentido com o botão da tela
                 if self.confirmar.collidepoint((mx, my)) and len(self.nome_jogador) > 0:
                     print(f"Nome salvo temporariamente: {self.nome_jogador}")
-                    self.proximo_estado = "Classes" 
+                    self.proximoEstado = "Classes"
                     self.concluido = True
                     # Adicione aqui para onde o jogo deve ir ao confirmar, ex:
                     # self.proximo_estado = "JogoPrincipal"

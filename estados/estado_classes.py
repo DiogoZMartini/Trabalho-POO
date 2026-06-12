@@ -18,16 +18,16 @@ class Classes(EstadoBase):
         self.pelado = pygame.Rect(450, 300, 150, 300)
         self.pelado.center = (600, 300)
         self.voltar = pygame.Rect(20,20,40,40)      
-    def tratarEventos(self, lista_eventos):
+    def tratarEventos(self, listaEventos):
         # 1. Pega a posição do mouse uma única vez no frame
         mx, my = pygame.mouse.get_pos()
         click = False
         
         # 2. Varre a lista de eventos que o Gerenciador passou
-        for event in lista_eventos:
+        for event in listaEventos:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    self.proximo_estado = "Newgame" 
+                    self.proximoEstado = "NewGame"
                     self.concluido = True
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1: # Clique com botão esquerdo
@@ -35,7 +35,7 @@ class Classes(EstadoBase):
             # 3. Se houve clique em qualquer momento do frame, checa as colisões
         if click:
             if self.voltar.collidepoint((mx, my)):
-                self.proximo_estado = "Newgame" 
+                self.proximoEstado = "NewGame"
                 self.concluido = True
             
             elif self.guerreiro.collidepoint((mx, my)):
