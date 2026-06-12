@@ -1,6 +1,8 @@
 import pygame
 from .estado_base import EstadoBase
 from entidades.inimigo import Inimigo
+from .estado_tela_vitoria import Vitoria
+from .estado_tela_derrota import Derrota
 
 
 class EstadoCombate(EstadoBase):
@@ -33,12 +35,34 @@ class EstadoCombate(EstadoBase):
             self.jogador.inv.modo = "padrao"
         super().fechar()
 
+    def checarFimDoCombate(self):
+        # 1. Se o monstro morreu, o jogador venceu
+        if self.inimigo.getVida() <= 0:
+            # Força o Redesenho: Mostra a vida do inimigo zerada no fundo antes da tela mudar
+            tela_atual = pygame.display.get_surface()
+            if tela_atual:
+                self.desenhar(tela_atual)
+                self.proximoEstado = Vitoria(self.jogador)
+                self.concluido = True
+                return True
+        # 2. Se a vida do jogador zerou, fim de jogo
+        if self.jogador.getVida() <= 0:
+            # Força o Redesenho: Atualiza a sua barra para 0 antes do pop-up de derrota aparecer
+            tela_atual = pygame.display.get_surface()
+            if tela_atual:
+                self.desenhar(tela_atual)
+                self.proximoEstado = Derrota()
+                self.concluido = True
+                return True
+        return False
+
     def tratarEventos(self, eventos):
         if self.jogador.inv:
             retornoInventario = self.jogador.inv.tratarEventos(eventos)
             if retornoInventario == "itemUsado":
                 self.exibindoBolsa = False
-                self.turnoInimigo()
+                if not self.checarFimDoCombate():
+                    self.turnoInimigo()
                 return
         if hasattr(self, 'exibindoBolsa') and self.exibindoBolsa:
             ponteiroMouse = pygame.mouse.get_pos()
@@ -77,19 +101,14 @@ class EstadoCombate(EstadoBase):
                 print(f"Você atacou causando {danoFinal} de dano!")
                 if self.jogador.getSpaEnergia() < 5:
                     self.jogador.setSpaEnergia(self.jogador.getSpaEnergia() + 1)
-                if self.inimigo.getVida() <= 0:
-                    print(f"Vitória! {self.inimigo.getNome()} foi derrotado!")
-                else:
+                if not self.checarFimDoCombate():
                     self.turnoInimigo()
             case "HABILIDADE":
                 if self.jogador.getSpaEnergia() == 5:
                     danoEspecial = danoFinal * 2
                     self.inimigo.tomarDano(danoEspecial)
                     self.jogador.setSpaEnergia(0)
-                    print(f"Você atacou causando {danoEspecial} de dano!")
-                    if self.inimigo.getVida() <= 0:
-                        print(f"Vitória! {self.inimigo.getNome()} foi derrotado!")
-                    else:
+                    if not self.checarFimDoCombate():
                         self.turnoInimigo()
                 else:
                     self.acaoAtiva = "erroEspecial"
@@ -119,10 +138,10 @@ class EstadoCombate(EstadoBase):
             self.jogador.tomarDano(danoDoMonstro)
             if self.inimigo.getSpaEnergia() < 5:
                 self.inimigo.setSpaEnergia(self.inimigo.getSpaEnergia() + 1)
-
+        self.checarFimDoCombate()
 
     def atualizar(self, dt):
-        pass
+        self.checarFimDoCombate()
 
     def desenhar(self, tela):
         larguraTela, alturaTela = tela.get_size()

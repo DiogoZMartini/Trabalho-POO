@@ -1,5 +1,6 @@
 import pygame
 from .estado_base import EstadoBase
+from .estado_classes import Classes
 
 class NewGame(EstadoBase):
     def __init__(self):
@@ -9,7 +10,7 @@ class NewGame(EstadoBase):
         # Define a fonte (Nome da fonte ou None para padrão, Tamanho)
         self.fonte = pygame.font.SysFont(None, 40)
         # salvar o nome do jogador
-        self.nome_jogador = ""
+        self.nomeJogador = ""
         # botões
         self.nome = pygame.Rect(150, 300, 450, 80)
         self.nome.center = (400, 300)
@@ -31,10 +32,10 @@ class NewGame(EstadoBase):
                     self.concluido = True
                 # apagar letras do nome
                 elif event.key == pygame.K_BACKSPACE:
-                    self.nome_jogador = self.nome_jogador[:-1]
+                    self.nomeJogador = self.nomeJogador[:-1]
                 else:
-                    if event.unicode.isprintable() and len(self.nome_jogador) < 15:
-                        self.nome_jogador += event.unicode
+                    if event.unicode.isprintable() and len(self.nomeJogador) < 15:
+                        self.nomeJogador += event.unicode
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1: # Clique com botão esquerdo
@@ -46,9 +47,9 @@ class NewGame(EstadoBase):
                     self.proximoEstado = "Saves"
                     self.concluido = True
                 # AJUSTE: Mudei para self.confirmar para fazer sentido com o botão da tela
-                if self.confirmar.collidepoint((mx, my)) and len(self.nome_jogador) > 0:
-                    print(f"Nome salvo temporariamente: {self.nome_jogador}")
-                    self.proximoEstado = "Classes"
+                if self.confirmar.collidepoint((mx, my)) and len(self.nomeJogador) > 0:
+                    print(f"Nome salvo temporariamente: {self.nomeJogador}")
+                    self.proximoEstado = Classes(self.nomeJogador)
                     self.concluido = True
                     # Adicione aqui para onde o jogo deve ir ao confirmar, ex:
                     # self.proximo_estado = "JogoPrincipal"
@@ -66,7 +67,7 @@ class NewGame(EstadoBase):
         txt_confirmar = self.fonte.render("Confirmar", True, (0, 0, 0))
         txt_nome = self.fonte.render("Qual o seu nome?", True, (255, 255, 255))
         # TEXTO DINÂMICO: Renderiza o nome que está sendo digitado
-        txt_digitado = self.fonte.render(self.nome_jogador, True, (0, 0, 0))
+        txt_digitado = self.fonte.render(self.nomeJogador, True, (0, 0, 0))
         
         # 2. Cria retângulos para os textos e centraliza nos botões
         rect_txt_confirmar = txt_confirmar.get_rect(center=self.confirmar.center)

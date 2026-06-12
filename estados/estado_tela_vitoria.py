@@ -2,8 +2,9 @@ import pygame
 from .estado_base import EstadoBase
 
 class Vitoria(EstadoBase):
-    def __init__(self):
+    def __init__(self, jogador):
         super().__init__()
+        self.jogador = jogador
         # Inicializa o sistema de fontes do Pygame
         pygame.font.init()
         # Define a fonte (Nome da fonte ou None para padrão, Tamanho)
@@ -32,7 +33,9 @@ class Vitoria(EstadoBase):
         # 3. Se houve clique em qualquer momento do frame, checa as colisões
         if click:
             if self.concluir.collidepoint((mx, my)):
-                pass
+                from .estado_combate import EstadoCombate
+                self.proximoEstado = EstadoCombate(self.jogador)
+                self.concluido = True
             
     def desenhar(self, tela):
             # Desenha os retângulos dos botões

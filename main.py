@@ -17,7 +17,6 @@ def main():
         "Classes": Classes(),
         "MenuPause": MenuPause(),
         "Menupause": MenuPause(),
-        "Vitoria": Vitoria(),
         "Derrota": Derrota()
     }
 

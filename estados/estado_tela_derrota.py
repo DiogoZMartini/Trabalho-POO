@@ -32,7 +32,8 @@ class Derrota(EstadoBase):
         # 3. Se houve clique em qualquer momento do frame, checa as colisões
         if click:
             if self.back.collidepoint((mx, my)):
-                pass
+                self.proximoEstado = "MenuPrincipal"
+                self.concluido = True
             
     def desenhar(self, tela):
             # Desenha os retângulos dos botões
