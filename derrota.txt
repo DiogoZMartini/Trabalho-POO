@@ -1,0 +1,17 @@
+from estados.estado_tela_derrota import Derrota
+
+no __init__:
+self.derrota = False
+self.objeto_derrota = Derrota()
+
+no tratar eventos:
+for evento in lista_eventos:
+    if self.derrota:
+         self.objeto_derrota.tratarEventos(lista_eventos)
+no fim do tratar eventos:
+elif evento.key == pygame.K_END:
+                    self.derrota = True
+
+no desenhar:
+if self.derrota:
+            self.objeto_derrota.desenhar(tela)

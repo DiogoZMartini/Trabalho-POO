@@ -1,0 +1,17 @@
+from estados.estado_tela_vitoria import Vitoria
+
+no __init__:
+self.vitoria = False
+self.objeto_vitoria = Vitoria()
+
+no tratar eventos:
+for evento in lista_eventos:
+            if self.vitoria:
+                self.objeto_vitoria.tratarEventos(lista_eventos)
+
+elif evento.key == pygame.K_CAPSLOCK:
+                    self.vitoria = True
+
+no desenhar:
+if self.vitoria:
+            self.objeto_vitoria.desenhar(tela)
