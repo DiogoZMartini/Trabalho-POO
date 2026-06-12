@@ -4,7 +4,7 @@ from banco import tabela_inimigos
 from utilidade.itens import Item
 
 class Inimigo (Personagem):
-    def __init__(self, nome, dano, vida, vidaMaxima, lvl, spa, dropExp, dropDinheiro, spaEnergia):
+    def __init__(self, nome, dano, vida, vidaMaxima, lvl, spa, spaEnergia, dropExp, dropDinheiro):
         super().__init__(nome, dano, vida, vidaMaxima, lvl, spa, spaEnergia)
         self.dropExp = dropExp
         self.dropItem = Item
@@ -66,34 +66,35 @@ class Inimigo (Personagem):
         return defesaTotal
 
     @classmethod
-    def gerarInimigoAleatorio(cls, lvl_jogador):
-        todos_inimigos = tabela_inimigos.all()
-        inimigos_validos = [i for i in todos_inimigos if i['nome'] != 'Mercador']
-        if not inimigos_validos:
-            return cls(nome="Zumbie", dano=5, vida=30, lvl=lvl_jogador, recurso=0, spa="Mordida")
-        dados_base = random.choice(inimigos_validos)
-        lvl_sorteado = random.randint(lvl_jogador - 1, lvl_jogador + 1)
-        if lvl_sorteado < 1:
-            lvl_sorteado = 1
-        multiplicador_status = 1 + (lvl_sorteado - 1) * 0.1
-        vida_final = int(dados_base['vida'] * multiplicador_status)
-        dano_final = int(dados_base['dano'] * multiplicador_status)
-        dropExpCalculado = lvl_sorteado * 25
-        dropDinheiroCalculado = lvl_sorteado * random.randint(5, 15)
+    def gerarInimigoAleatorio(cls, lvlJogador):
+        todosInimigos = tabela_inimigos.all()
+        inimigosValidos = [i for i in todosInimigos if i['nome'] != 'Mercador']
+        if not inimigosValidos:
+            return cls(nome="Zumbie", dano=5, vida=30,vidaMaxima=30, lvl=lvlJogador, recurso=0, spa="Mordida")
+        dadosBase = random.choice(inimigosValidos)
+        lvlSorteado = random.randint(lvlJogador - 1, lvlJogador + 1)
+        if lvlSorteado < 1:
+            lvlSorteado = 1
+        multiplicadorStatus = 1 + (lvlSorteado - 1) * 0.1
+        vidaFinal = int(dadosBase['vida'] * multiplicadorStatus)
+        danoFinal = int(dadosBase['dano'] * multiplicadorStatus)
+        dropExpCalculado = lvlSorteado * 25
+        dropDinheiroCalculado = lvlSorteado * random.randint(5, 15)
         return cls(
-            nome=dados_base['nome'],
-            dano=dano_final,
-            vida=vida_final,
-            lvl=lvl_sorteado,
-            spa=dados_base.get('spa', 'Ataque Básico'),
+            nome=dadosBase['nome'],
+            dano=danoFinal,
+            vida=vidaFinal,
+            vidaMaxima=vidaFinal,
+            lvl=lvlSorteado,
+            spa=dadosBase.get('spa', 'Ataque Básico'),
             spaEnergia= 0,
             dropExp = dropExpCalculado,
             dropDinheiro = dropDinheiroCalculado
         )
 
 class Mercador(Inimigo):
-    def __init__(self, nome, dano, vida, lvl, recurso, dropExp, dropdinheiro):
-        super().__init__(nome, dano, vida, lvl, recurso, dropExp, dropdinheiro)
+    def __init__(self, nome, dano, vida, vidaMaxima, spa, spaEnergia, lvl, dropExp, dropdinheiro):
+        super().__init__(nome, dano, vida, vidaMaxima, lvl, dropExp, dropdinheiro, spa, spaEnergia)
         self.mercadoria = []
 
     def getNome(self):
@@ -102,10 +103,14 @@ class Mercador(Inimigo):
         return super().getDano()
     def getVida(self):
         return super().getVida()
+    def setVidaMaxima(self, vidaMaxima):
+        super().setVidaMaxima(vidaMaxima)
     def getLvl(self):
         return super().getLvl()
-    def getRecurso(self):
-        return super().getRecurso()
+    def getSpa(self):
+        return super().getSpa()
+    def getSpaEnergia(self):
+        return super().getSpaEnergia()
     def getDropExp(self):
         return super().getDropExp()
     def getDropItem(self):
@@ -120,10 +125,14 @@ class Mercador(Inimigo):
         super().setDano(dano)
     def setVida(self, vida):
         super().setVida(vida)
+    def setVidaMaxima(self, vidaMaxima):
+        super().setVidaMaxima(vidaMaxima)
     def setLvl(self, lvl):
         super().setLvl(lvl)
-    def setRecurso(self, recurso):
-        super().setRecurso(recurso)
+    def setSpa(self, spa):
+        super().setSpa(spa)
+    def setSpaEnergia(self, spaEnergia):
+        super().setSpaEnergia(spaEnergia)
     def setDropExp(self, dropexp):
         super().setDropExp(dropexp)
     def setDropItem(self, dropitem):

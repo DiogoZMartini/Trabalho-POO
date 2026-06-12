@@ -71,7 +71,8 @@ def rodar_teste_combate():
         efeito="Cura",  # ALTERADO: Agora bate certinho com o if do itens.py
         preco=25,
         raridade="Comum",
-        uso="Cura 30 HP"
+        uso="Cura 30 HP",
+        img='assets/img/itens/pocaoDeVida.jpg'
     )
 
     elixir_energia = Item(
@@ -120,7 +121,8 @@ def rodar_teste_combate():
         "exp": 120,
         "classe": "Guerreiro",
         "dinheiro": 350,
-        "spa": "Impacto Devastador"
+        "spa": "Impacto Devastador",
+        "maxXp": 500
     }
 
     # 4. CRIAÇÃO DO OBJETO JOGADOR
@@ -128,12 +130,13 @@ def rodar_teste_combate():
         nome=dados_jogador_ficticio["nome"],
         dano=dados_jogador_ficticio["dano"],
         vida=dados_jogador_ficticio["vida"],
+        vidaMaxima=dados_jogador_ficticio["vidaMaxima"],
         lvl=dados_jogador_ficticio["lvl"],
         exp=dados_jogador_ficticio["exp"],
         classe=dados_jogador_ficticio["classe"],
         dinheiro=dados_jogador_ficticio["dinheiro"],
         spa=dados_jogador_ficticio["spa"],
-        spaEnergia=0
+        spaEnergia=0,
     )
 
     # 5. ASSIGNAÇÃO RÍGIDA DOS OBJETOS NO INVENTÁRIO DO JOGADOR

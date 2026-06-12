@@ -2,7 +2,7 @@ from classe import Personagem
 from componentes.inventario import Inventario
 
 class Jogador(Personagem):
-    def __init__(self, nome, dano, vida, vidaMaxima, lvl, spa, exp, classe, dinheiro, spaEnergia, maxXp = 100):
+    def __init__(self, nome, dano, vida, vidaMaxima, lvl, spa, spaEnergia, exp, classe, dinheiro, maxXp = 100):
         super().__init__(nome, dano, vida, vidaMaxima, lvl, spa, spaEnergia)
         self.exp = exp
         self.classe = classe

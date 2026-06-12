@@ -13,10 +13,10 @@ class Geral:
         self.dano = dano
 
 class Personagem(Geral):
-    def __init__(self, nome, dano, vida, lvl, spa, spaEnergia):
+    def __init__(self, nome, dano, vida, vidaMaxima, lvl, spa, spaEnergia):
         super().__init__(nome, dano)
         self.vida = vida
-        self.vidaMaxima = vida
+        self.vidaMaxima = vidaMaxima
         self.lvl = lvl
         self.spa = spa
         self.spaEnergia = spaEnergia
