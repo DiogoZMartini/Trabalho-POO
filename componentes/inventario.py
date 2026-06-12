@@ -6,7 +6,6 @@ from tinydb import Query
 class Inventario:
     def __init__(self, jogador, modo):
         self.jogadorObjeto = jogador
-        self.nomeJogador = jogador.getNome()
         self.modo = modo
         self.slotSelecionado = None
         self.tipoSlotSelecionado = None
@@ -18,7 +17,7 @@ class Inventario:
         self.carregarInventario()
 
     def carregarInventario(self):
-        resultado = tabela_jogador.search(Query().nome == self.nomeJogador)
+        resultado = tabela_jogador.search(Query().nome == self.jogadorObjeto.getNome())
         if resultado:
             dados_brutos = resultado[0]
             self.dadosJogador = dados_brutos
@@ -58,7 +57,7 @@ class Inventario:
                     'equipamentos': eqSalvavel,
                     'vida': self.jogadorObjeto.getVida()
                 },
-                Query().nome == self.nomeJogador
+                Query().nome == self.jogadorObjeto.getNome()
             )
 
     def objetoParaDicionario(self, item):
@@ -77,7 +76,6 @@ class Inventario:
         }
 
     def tratarEventos(self, eventos):
-        from entidades.jogador import Jogador
         ponteiroMouse = pygame.mouse.get_pos()
         resultadoFoco = self.obterSlotPorPosicao(ponteiroMouse)
         if resultadoFoco:

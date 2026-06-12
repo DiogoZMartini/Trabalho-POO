@@ -13,12 +13,11 @@ class Geral:
         self.dano = dano
 
 class Personagem(Geral):
-    def __init__(self, nome, dano, vida, lvl, recurso, spa, spaEnergia):
+    def __init__(self, nome, dano, vida, lvl, spa, spaEnergia):
         super().__init__(nome, dano)
         self.vida = vida
         self.vidaMaxima = vida
         self.lvl = lvl
-        self.recurso = recurso
         self.spa = spa
         self.spaEnergia = spaEnergia
 
@@ -32,8 +31,6 @@ class Personagem(Geral):
         return self.vidaMaxima
     def getLvl(self):
         return self.lvl
-    def getRecurso(self):
-        return self.recurso
     def getSpa(self):
         return self.spa
     def getSpaEnergia(self):
@@ -48,19 +45,10 @@ class Personagem(Geral):
         self.vidaMaxima = vidaMaxima
     def setLvl(self, lvl):
         self.lvl = lvl
-    def setRecurso(self, recurso):
-        self.recurso = recurso
     def setSpa(self, spa):
         self.spa = spa
     def setSpaEnergia(self, spaEnergia):
         self.spaEnergia = spaEnergia
-
-    def ataque(self, dano):
-        pass
-    def ataqueSpe(self, dano):
-        pass
-    def curarVida(self, dano):
-        pass
 
     def tomarDano(self, quantidadeDano):
         danoReal = quantidadeDano + self.defesa()

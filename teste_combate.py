@@ -112,12 +112,11 @@ def rodar_teste_combate():
 
     # 3. DADOS BASE DO JOGADOR
     dados_jogador_ficticio = {
-        "nome": "Diogo Herói",
+        "nome": "Herói",
         "dano": 1,
         "vida": 80,         # Iniciamos com 80 para poder testar a cura até 120!
         "vidaMaxima": 120,   # Guardamos a referência do limite máximo
         "lvl": 3,
-        "recurso": 50,
         "exp": 120,
         "classe": "Guerreiro",
         "dinheiro": 350,
@@ -130,7 +129,6 @@ def rodar_teste_combate():
         dano=dados_jogador_ficticio["dano"],
         vida=dados_jogador_ficticio["vida"],
         lvl=dados_jogador_ficticio["lvl"],
-        recurso=dados_jogador_ficticio["recurso"],
         exp=dados_jogador_ficticio["exp"],
         classe=dados_jogador_ficticio["classe"],
         dinheiro=dados_jogador_ficticio["dinheiro"],

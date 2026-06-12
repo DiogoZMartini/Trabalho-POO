@@ -13,7 +13,7 @@ class EstadoCombate(EstadoBase):
         if self.jogador and hasattr(self.jogador, 'inv') and self.jogador.inv:
             self.jogador.inv.modo = "combate"
 
-    def carregarInimigo(self, carregarInimigo=None):
+    def carregarInimigo(self, nomeInimigoAlvo):
         lvlJogador = self.jogador.getLvl()
         self.inimigo = Inimigo.gerarInimigoAleatorio(lvlJogador)
         self.jogador.inimigoFoco = {
@@ -80,16 +80,20 @@ class EstadoCombate(EstadoBase):
                     self.jogador.setSpaEnergia(self.jogador.getSpaEnergia() + 1)
                 if self.inimigo.getVida() <= 0:
                     print(f"Vitória! {self.inimigo.getNome()} foi derrotado!")
-                self.turnoInimigo()
+                else:
+                    self.turnoInimigo()
             case "HABILIDADE":
                 if self.jogador.getSpaEnergia() == 5:
                     danoEspecial = danoFinal * 2
                     self.inimigo.tomarDano(danoEspecial)
                     self.jogador.setSpaEnergia(0)
                     print(f"Você atacou causando {danoEspecial} de dano!")
-                    self.turnoInimigo()
+                    if self.inimigo.getVida() <= 0:
+                        print(f"Vitória! {self.inimigo.getNome()} foi derrotado!")
+                    else:
+                        self.turnoInimigo()
                 else:
-                    self.acaoAtiva = "erro_especial"
+                    self.acaoAtiva = "erroEspecial"
             case "ITEM":
                 if not hasattr(self, 'exibindoBolsa'):
                     self.exibindoBolsa = False
