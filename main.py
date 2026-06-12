@@ -1,5 +1,4 @@
 from gerenciador import GerenciadorJogo
-from estados.estado_template import Exemplo
 from estados.estado_menuprincipal import MenuPrincipal
 from estados.estado_template import Exemplo
 from estados.estado_saves import Saves
@@ -13,7 +12,7 @@ def main():
         "Saves": Saves(),
         "NewGame": NewGame(),
         "Classes": Classes(), 
-        "MenuPause": MenuPause()
+        "MenuPause": MenuPause(),
     }
 
     jogo = GerenciadorJogo(800,600, "Nome do jogo", dicionarioEstados, "MenuPrincipal") #Cria a instância principal do jogo largura (800 px), altura (600 px), título da janela, o dicionário de telas e qual tela começa ativa.

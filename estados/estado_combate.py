@@ -57,10 +57,9 @@ class EstadoCombate(EstadoBase):
                 slotFocado = self.jogador.inv.obterSlotPorPosicao(mousePos)
                 if slotFocado and slotFocado[0] == "botaoCombate":
                     acao = slotFocado[1]
-                    self.executarAcaoCombate(acao)
+                    self.executarAcaoCombate(acao.upper())
 
     def executarAcaoCombate(self, acao):
-        acao = acao.upper()
         self.acaoAtiva = None
         danoTotal = self.jogador.getDano()
         equipamentos = self.jogador.inv.equipamentos
