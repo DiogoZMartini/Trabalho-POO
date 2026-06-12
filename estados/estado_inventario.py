@@ -4,10 +4,10 @@ from componentes.inventario import Inventario
 
 
 class EstadoInventario(EstadoBase):
-    def __init__(self, nomeJogador):
+    def __init__(self, jogador):
         super().__init__()
-        self.nomeJogador = nomeJogador
-        self.inventario_hud = Inventario(nomeJogador, modo="padrao")
+        self.jogador = jogador
+        self.inventario_hud = Inventario(jogador=self.jogador, modo="padrao")
 
     def abrir(self):
         super().abrir()

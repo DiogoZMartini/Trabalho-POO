@@ -2,12 +2,13 @@ from classe import Personagem
 from componentes.inventario import Inventario
 
 class Jogador(Personagem):
-    def __init__(self, nome, dano, vida, lvl, recurso, exp, classe, dinheiro):
-        super().__init__(nome, dano, vida, lvl, recurso)
+    def __init__(self, nome, dano, vida, vidaMaxima, lvl, spa, spaEnergia, exp, classe, dinheiro, maxXp = 100):
+        super().__init__(nome, dano, vida, vidaMaxima, lvl, spa, spaEnergia)
         self.exp = exp
         self.classe = classe
         self.inv = Inventario(jogador=self, modo="padrao")
         self.dinheiro = dinheiro
+        self.maxXp = maxXp
 
     def getNome(self):
         return super().getNome()
@@ -15,10 +16,14 @@ class Jogador(Personagem):
         return super().getDano()
     def getVida(self):
         return super().getVida()
+    def getVidaMaxima(self):
+        return super().getVidaMaxima()
     def getLvl(self):
         return super().getLvl()
-    def getRecurso(self):
-        return super().getRecurso()
+    def getSpa(self):
+        return super().getSpa()
+    def getSpaEnergia(self):
+        return super().getSpaEnergia()
     def getExp(self):
         return self.exp
     def getClasse(self):
@@ -33,10 +38,14 @@ class Jogador(Personagem):
         super().setDano(dano)
     def setVida(self, vida):
         super().setVida(vida)
+    def setVidaMaxima(self, vidaMaxima):
+        super().setVidaMaxima(vidaMaxima)
     def setLvl(self, lvl):
         super().setLvl(lvl)
-    def setRecurso(self, recurso):
-        super().setRecurso(recurso)
+    def setSpa(self, spa):
+        super().setSpa(spa)
+    def setSpaEnergia(self, spaEnergia):
+        super().setSpaEnergia(spaEnergia)
     def setExp(self, exp):
         self.exp = exp
     def setClasse(self, classe):
@@ -50,15 +59,6 @@ class Jogador(Personagem):
     def setDinheiro(self, dinheiro):
         self.dinheiro = dinheiro
 
-    def ataque(self, dano):
-        super().ataque(dano)
-
-    def ataqueSpe(self, dano):
-        super().ataqueSpe(dano)
-
-    def curarVida(self, dano):
-        super().curarVida(dano)
-
     def tomarDano(self, dano):
         super().tomarDano(dano)
 
@@ -69,3 +69,15 @@ class Jogador(Personagem):
             return True
         print("Mochila cheia! Não foi possível adicionar o item.")
         return False
+
+    def defesa(self):
+        defesaTotal = 0
+        slotsDeDefesa = ["Capacete", "Armadura", "Bota"]
+        for slot in slotsDeDefesa:
+            item = self.inv.equipamentos.get(slot)
+            if item:
+                defesaTotal += item.getDano()
+        return defesaTotal
+
+    def uparLevel(xp,maxxp):
+        pass
