@@ -16,7 +16,7 @@ class Saves(EstadoBase):
         self.save2.center = (400, 300)
         self.save3 = pygame.Rect(450, 300, 150, 300)
         self.save3.center = (600, 300)
-        self.voltar = pygame.Rect(20,20,40,40)
+        self.voltar = pygame.Rect(20, 20, 40, 40)
         #guardar o save selecionado
         self.slot_selecionado = 0
 
@@ -38,7 +38,8 @@ class Saves(EstadoBase):
         if click:
             if self.voltar.collidepoint((mx, my)):
                 self.proximoEstado = "MenuPrincipal"
-                self.concproximoEstadoluido = True
+                self.concluido = True
+
             elif self.save1.collidepoint((mx, my)):
                 self.slot_selecionado = 1
                 self.proximoEstado = "NewGame"
