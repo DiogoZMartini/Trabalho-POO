@@ -39,18 +39,30 @@ class EstadoCombate(EstadoBase):
         # 1. Se o monstro morreu, o jogador venceu
         if self.inimigo.getVida() <= 0:
             # Força o Redesenho: Mostra a vida do inimigo zerada no fundo antes da tela mudar
-            tela_atual = pygame.display.get_surface()
-            if tela_atual:
-                self.desenhar(tela_atual)
-                self.proximoEstado = Vitoria(self.jogador)
-                self.concluido = True
-                return True
+            telaAtual = pygame.display.get_surface()
+            if telaAtual:
+                self.desenhar(telaAtual)
+            # Cura no final de cada luta
+            lvl_jogador = self.jogador.getLvl()
+            quantidadeCura = 10 + (1 * lvl_jogador)
+            novaVida = self.jogador.getVida() + quantidadeCura
+            if novaVida > self.jogador.getVidaMaxima():
+                novaVida = self.jogador.getVidaMaxima()
+            self.jogador.setVida(novaVida)
+            expGanho = self.inimigo.dropadoExp()
+            dinheiroGanho = self.inimigo.dropadoDinheiro()
+            itemGanho = self.inimigo.dropadoItem()
+            # Aplica recompensa ao personagem
+            self.jogador.setExp(self.jogador.getExp() + expGanho)
+            self.jogador.setDinheiro(self.jogador.getDinheiro() + dinheiroGanho)
+            self.proximoEstado = Vitoria(self.jogador, expGanho, dinheiroGanho, itemGanho)
+            self.concluido = True
         # 2. Se a vida do jogador zerou, fim de jogo
         if self.jogador.getVida() <= 0:
             # Força o Redesenho: Atualiza a sua barra para 0 antes do pop-up de derrota aparecer
-            tela_atual = pygame.display.get_surface()
-            if tela_atual:
-                self.desenhar(tela_atual)
+            telaAtual = pygame.display.get_surface()
+            if telaAtual:
+                self.desenhar(telaAtual)
                 self.proximoEstado = Derrota()
                 self.concluido = True
                 return True

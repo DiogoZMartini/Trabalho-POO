@@ -48,6 +48,7 @@ class Jogador(Personagem):
         super().setSpaEnergia(spaEnergia)
     def setExp(self, exp):
         self.exp = exp
+        self.uparLevel()
     def setClasse(self, classe):
         self.classe = classe
     def setInv(self, lista_itens):
@@ -79,5 +80,16 @@ class Jogador(Personagem):
                 defesaTotal += item.getDano()
         return defesaTotal
 
-    def uparLevel(xp,maxxp):
-        pass
+    def uparLevel(self):
+        while self.exp >= self.maxXp:
+            self.exp -= self.maxXp  # Desconta o XP gasto e guarda o restante (carryover)
+            # 1. Aumenta o Nível em 1
+            self.setLvl(self.getLvl() + 1)
+            # 2. Aumenta a vida máxima em 10
+            self.setVidaMaxima(self.getVidaMaxima() + 10)
+            # 3. Cure toda a vida (Vida atual vira a nova Vida Máxima)
+            self.setVida(self.getVidaMaxima())
+            # 4. Aumenta o dano em 1
+            self.setDano(self.getDano() + 1)
+            # 5. Escala o próximo XP Máximo baseado na fórmula da sua HUD (Lvl * 100)
+            self.maxXp = self.getLvl() * 100

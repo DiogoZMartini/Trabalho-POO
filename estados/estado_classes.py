@@ -15,7 +15,7 @@ class Classes(EstadoBase):
         #guardar a classe selecionada
         self.classeSelecionada = ""
         self.nomeJogador = nomeJogador
-        # Seus botões originais
+        # Botões originais
         self.guerreiro = pygame.Rect(150, 300, 150, 300)
         self.guerreiro.center = (200, 300)
         self.mago = pygame.Rect(300, 300, 150, 300)
@@ -31,7 +31,7 @@ class Classes(EstadoBase):
         if dados_classe:
             status = dados_classe[0]
             novoJogador = Jogador(
-                nome=self.nomeJogador,  # Nome padrão inicial do personagem
+                nome=self.nomeJogador,
                 dano=status['dano'],
                 vida=status['vida'],
                 vidaMaxima=status['vidaMaxima'],

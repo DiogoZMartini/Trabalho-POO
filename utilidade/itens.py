@@ -1,4 +1,5 @@
 from classe import Geral
+from banco import tabela_itens
 import random
 
 
@@ -55,6 +56,29 @@ class Item(Geral):
         self.img = img
     def setUso(self, uso):
         self.uso = uso
+
+    @classmethod
+    def gerarItemAleatorio(cls, lvlInimigo):
+        todosItensCatalogo = tabela_itens.all()
+        if not todosItensCatalogo:
+            return cls.criarItemComRaridade("Poção de Vida", "Consumivel", "Cura", 10 + lvlInimigo * 5)
+        dadosItemBanco = random.choice(todosItensCatalogo)
+        # Passa o dano/valor original do banco para a sua função de raridade
+        itemFinal = cls.criarItemComRaridade(
+            nomeBase=dadosItemBanco['nome'],
+            tipoItem=dadosItemBanco['tipo'],
+            efeitoBase=dadosItemBanco['efeito'],
+            valorBase=dadosItemBanco['dano']
+        )
+        # o preço calculado por lá pode ficar negativo. Aqui garantimos que seja positivo)
+        if itemFinal.getPreco() < 0:
+            itemFinal.setPreco(abs(itemFinal.getPreco()))
+        # Preserva o resto das informações customizadas que você cadastrou no banco
+        itemFinal.setDescricao(dadosItemBanco['descricao'])
+        itemFinal.setQuantidadeMaxima(dadosItemBanco['quantidadeMaxima'])
+        itemFinal.setImg(dadosItemBanco.get('img', None))
+        itemFinal.setUso(dadosItemBanco.get('uso', 'Sem uso definido'))
+        return itemFinal
 
     @classmethod
     def criarItemComRaridade(cls, nomeBase, tipoItem, efeitoBase, valorBase):

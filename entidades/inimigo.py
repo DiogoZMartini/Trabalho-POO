@@ -7,7 +7,7 @@ class Inimigo (Personagem):
     def __init__(self, nome, dano, vida, vidaMaxima, lvl, spa, spaEnergia, dropExp, dropDinheiro):
         super().__init__(nome, dano, vida, vidaMaxima, lvl, spa, spaEnergia)
         self.dropExp = dropExp
-        self.dropItem = Item
+        self.dropItem = None
         self.dropDinheiro = dropDinheiro
 
     def getNome(self):
@@ -54,12 +54,28 @@ class Inimigo (Personagem):
     def tomarDano(self, dano):
         super().tomarDano(dano)
 
-    def expDropado(self):
-        pass
-    def expDropItem(self):
-        pass
-    def expDropDinheiro(self):
-        pass
+    def dropadoExp(self):
+        lvl = self.getLvl()
+        exp_base = (lvl * 25) + (lvl - 1) * 5
+        variacao_min = int(exp_base * 0.85)
+        variacao_max = int(exp_base * 1.15)
+        expFinal = random.randint(variacao_min, variacao_max)
+        return max(5, expFinal)
+
+    def dropadoItem(self):
+        chanceDrop = 0.75
+        if random.random() <= chanceDrop:
+            itemSorteado = Item.gerarItemAleatorio(self.getLvl()) if hasattr(Item, 'gerarItemAleatorio') else None
+            self.dropItem = itemSorteado
+            return self.dropItem
+        self.dropItem = None
+        return None
+    
+    def dropadoDinheiro(self):
+        minimo = self.getLvl() * 5
+        maximo = self.getLvl() * 15
+        dinheiroFinal = random.randint(minimo, maximo)
+        return dinheiroFinal
 
     def defesa(self):
         defesaTotal = 0
@@ -94,7 +110,7 @@ class Inimigo (Personagem):
 
 class Mercador(Inimigo):
     def __init__(self, nome, dano, vida, vidaMaxima, spa, spaEnergia, lvl, dropExp, dropdinheiro):
-        super().__init__(nome, dano, vida, vidaMaxima, lvl, dropExp, dropdinheiro, spa, spaEnergia)
+        super().__init__(nome, dano, vida, vidaMaxima, lvl, spa, spaEnergia, dropExp, dropdinheiro)
         self.mercadoria = []
 
     def getNome(self):

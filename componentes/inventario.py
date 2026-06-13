@@ -10,6 +10,7 @@ class Inventario:
         self.slotSelecionado = None
         self.tipoSlotSelecionado = None
         self.mochila = []
+        self.equipamentos = {k: None for k in ["Capacete", "Colar", "Arma", "Armadura", "Bota", "Anel"]}
         self.equipamentos = {}
         self.dadosJogador = None
         self.slotsRegiao = []
@@ -27,9 +28,8 @@ class Inventario:
                 if itemDit:
                     self.mochila.append(self.dicionarioParaObjeto(itemDit))
             eqBanco = dados_brutos.get('equipamentos', {})
-            self.equipamentos = {k: None for k in ["Capacete", "Colar", "Arma", "Armadura", "Bota", "Anel"]}
             for chave, itemDit in eqBanco.items():
-                if itemDit:
+                if itemDit and chave in self.equipamentos:
                     self.equipamentos[chave] = self.dicionarioParaObjeto(itemDit)
             self.jogadorObjeto.setInv(self.mochila)
 
@@ -98,11 +98,20 @@ class Inventario:
                             item = self.mochila[idx]
                             if evento.button == 1: # Clique Esquerdo: Usar / Equipar
                                 if item.getTipo() == 'Consumivel':
-                                    sucesso = item.aplicarEfeitoItem(self.dadosJogador)
-                                    if sucesso:
-                                        self.jogadorObjeto.setVida(self.dadosJogador['vida'])
-                                        self.mochila.pop(idx)
-                                        self.salvarInventario()
+                                    efeitoItemMinu = item.getEfeito().lower()
+                                    if "efeito" in efeitoItemMinu:
+                                        dados_atuais = {
+                                            "vida": self.jogadorObjeto.getVida(),
+                                            "vidaMaxima": self.jogadorObjeto.getVidaMaxima()
+                                        }
+                                        sucesso = item.aplicarEfeitoItem(dados_atuais)
+                                        if sucesso:
+                                            self.jogadorObjeto.setVida(dados_atuais['vida'])
+                                            self.mochila.pop(idx)
+                                            self.salvarInventario()
+                                    else:
+                                        print(
+                                            f"[Aviso] No modo padrão, você só pode consumir Poções de Vida! '{item.getNome()}' bloqueado.")
                                 else:
                                     depara_slots = {
                                         "Capacete": "Capacete",
@@ -115,7 +124,7 @@ class Inventario:
                                     tipoItem = item.getTipo()
                                     if tipoItem in depara_slots:
                                         slotDestino = depara_slots[tipoItem]
-                                        itemAntigo = self.equipamentos[slotDestino]
+                                        itemAntigo = self.equipamentos.get(slotDestino, None)
                                         self.equipamentos[slotDestino] = item
                                         if itemAntigo:
                                             self.mochila[idx] = itemAntigo
