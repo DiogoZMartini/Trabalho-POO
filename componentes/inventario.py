@@ -75,7 +75,7 @@ class Inventario:
             'uso': getattr(item, 'uso', None)
         }
 
-    def tratarEventos(self, eventos):
+    def tratarEventos(self, eventos, inimigo=None):
         ponteiroMouse = pygame.mouse.get_pos()
         resultadoFoco = self.obterSlotPorPosicao(ponteiroMouse)
         if resultadoFoco:
@@ -151,24 +151,20 @@ class Inventario:
                         if idx < len(self.mochila):
                             item = self.mochila[idx]
                             if item.getTipo() == 'Consumivel':
-                                vida_atual = self.jogadorObjeto.getVida()
-                                vida_maxima = self.jogadorObjeto.getVidaMaxima()
-                                if vida_atual >= vida_maxima:
-                                    print("Vida já está cheia! Item não utilizado.")
-                                    return None
-                                dict_temp = {"vida": vida_atual, "vidaMaxima": vida_maxima}
-                                sucesso = item.aplicarEfeitoItem(dict_temp)
-                                if sucesso:
-                                    poderCura = item.getDano()
-                                    nova_vida = min(vida_maxima, vida_atual + poderCura)
-                                    self.jogadorObjeto.setVida(nova_vida)
-                                    if hasattr(self, 'dadosJogador') and self.dadosJogador:
-                                        self.dadosJogador['vida'] = nova_vida
-                                    self.mochila.pop(idx)
-                                    self.salvarInventario()
-                                    print(
-                                        f"[COMBATE] {item.getNome()} usada com sucesso! Vida: {nova_vida}/{vida_maxima}")
-                                    return "itemUsado"
+                                if item.getEfeito() == 'Cura':
+                                    if self.jogadorObjeto.getVida() >= self.jogadorObjeto.getVidaMaxima():
+                                        return None
+                                    elif item.aplicarEfeitoItem(self.jogadorObjeto):
+                                        if hasattr(self, 'dadosJogador') and self.dadosJogador:
+                                            self.dadosJogador['vida'] = self.jogadorObjeto.getVida()
+                                        self.mochila.pop(idx)
+                                        self.salvarInventario()
+                                        return "itemUsado"
+                                elif item.getEfeito() == 'Causa Dano':
+                                    if item.aplicarEfeitoItem(self.jogadorObjeto, alvo=inimigo):
+                                        self.mochila.pop(idx)
+                                        self.salvarInventario()
+                                        return "itemUsado"
                             else:
                                 print(f"Você não pode equipar ou usar '{item.getNome()}' durante o combate!")
         return None

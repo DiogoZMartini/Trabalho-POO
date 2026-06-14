@@ -1,5 +1,6 @@
 import pygame
 from .estado_base import EstadoBase
+from .estado_menupause import MenuPause
 
 class Vitoria(EstadoBase):
     def __init__(self, jogador, exp_ganha, dinheiro_ganho, item_ganho):
@@ -11,6 +12,8 @@ class Vitoria(EstadoBase):
         self.itemColetado = False
         self.mensagemErro = ""
         self.mostrarInventario = False
+        self.menuPause = MenuPause()
+        self.jogoPausado = False
         # Inicializa o sistema de fontes do Pygame
         pygame.font.init()
         # Define a fonte (Nome da fonte ou None para padrão, Tamanho)
@@ -29,6 +32,18 @@ class Vitoria(EstadoBase):
         self.rectItemClicavel = pygame.Rect(self.pop_vitoria.x + 20, 250, 410, 42)
     
     def tratarEventos(self, listaEventos):
+        if self.jogoPausado:
+            self.menuPause.tratarEventos(listaEventos, self.jogador)
+            # Verifica se o jogador clicou em "Resume" lá dentro
+            if not self.menuPause.pause:
+                self.jogoPausado = False
+                self.menuPause.pause = True
+            # Se o menu de pause acionou uma mudança de estado (voltou pro menu principal)
+            if self.menuPause.concluido:
+                self.proximoEstado = self.menuPause.proximoEstado
+                self.concluido = True
+            return
+
         # Se o inentario estiver aberto faz os eventos dele
         if self.mostrarInventario:
             self.jogador.inv.tratarEventos(listaEventos)
@@ -50,8 +65,12 @@ class Vitoria(EstadoBase):
                     self.jogador.inv.modo = "padrao"
                     self.mostrarInventario = not self.mostrarInventario
                     # Se apertar ESC com o inventário aberto, apenas fecha o inventário
-                elif event.key == pygame.K_ESCAPE and self.mostrarInventario:
-                    self.mostrarInventario = False
+                elif event.key == pygame.K_ESCAPE:
+                    if self.mostrarInventario:
+                        self.mostrarInventario = False  # Se o inventário estiver aberto, apenas fecha ele
+                    else:
+                        self.jogoPausado = True  # Se estiver fechado, abre o Menu de Pause
+                        self.menuPause.pause = True
         
         # 3. Se houve clique em qualquer momento do frame, checa as colisões
         if click:
@@ -123,3 +142,11 @@ class Vitoria(EstadoBase):
             superficie_fundo.fill((0, 0, 0, 180))
             tela.blit(superficie_fundo, (0, 0))
             self.jogador.inv.desenhar(tela)
+
+        if self.jogoPausado:
+            # Cria a película escura transparente
+            superficieEscuro = pygame.Surface(tela.get_size(), pygame.SRCALPHA)
+            superficieEscuro.fill((0, 0, 0, 150))
+            tela.blit(superficieEscuro, (0, 0))
+            # Desenha o menu de pause
+            self.menuPause.desenhar(tela)

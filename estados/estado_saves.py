@@ -1,13 +1,17 @@
 import pygame
 from .estado_base import EstadoBase
+from banco import carregarJogo
+from .estado_combate import EstadoCombate
 
 class Saves(EstadoBase):
-    def __init__(self):
+    def __init__(self, modo="novo"):
         super().__init__()
+        self.modo = modo
+        self.slotAtivo = 1
         # Inicializa o sistema de fontes do Pygame
         pygame.font.init()
         # Define a fonte (Nome da fonte ou None para padrão, Tamanho)
-        self.fonte = pygame.font.SysFont(None, 40)
+        self.fonte = pygame.font.SysFont(None, 32)
         
         # Seus botões originais
         self.save1 = pygame.Rect(150, 300, 150, 300)
@@ -39,19 +43,63 @@ class Saves(EstadoBase):
             if self.voltar.collidepoint((mx, my)):
                 self.proximoEstado = "MenuPrincipal"
                 self.concluido = True
+                return
 
-            elif self.save1.collidepoint((mx, my)):
-                self.slot_selecionado = 1
-                self.proximoEstado = "NewGame"
-                self.concluido = True
+            slotClicado = None
+            if self.save1.collidepoint((mx, my)):
+                slotClicado = 1
             elif self.save2.collidepoint((mx, my)):
-                self.slot_selecionado = 2
-                self.proximoEstado = "NewGame"
-                self.concluido = True
+                slotClicado = 2
             elif self.save3.collidepoint((mx, my)):
-                self.slot_selecionado = 3
-                self.proximoEstado = "NewGame"
-                self.concluido = True
+                slotClicado = 3
+
+            if slotClicado is not None:
+                Saves.slotAtivo = slotClicado  # Define globalmente qual slot o jogador está usando
+                if self.modo == "carregar":
+                    dadosSalvos = carregarJogo(slotClicado)
+                    if dadosSalvos:
+                        from entidades.jogador import Jogador
+                        jogadorCarregado = Jogador(
+                            nome=dadosSalvos['nome'],
+                            classe=dadosSalvos['classe'],
+                            dano=dadosSalvos['dano'],  # Puxa direto do banco!
+                            vida=dadosSalvos['vida'],
+                            vidaMaxima=dadosSalvos['vidaMaxima'],
+                            lvl=dadosSalvos['lvl'],
+                            spa=dadosSalvos['spa'],
+                            spaEnergia=dadosSalvos['spaEnergia'],
+                            exp=dadosSalvos['exp'],
+                            dinheiro=dadosSalvos['dinheiro']
+                        )
+                        if 'maxXp' in dadosSalvos:
+                            jogadorCarregado.maxXp = dadosSalvos['maxXp']
+                            # Reconstrói a mochila
+                        if 'inv' in dadosSalvos and hasattr(jogadorCarregado, 'inv'):
+                            jogadorCarregado.inv.mochila = []
+                            for dados_item in dadosSalvos['inv']:
+                                if dados_item:
+                                    item_objeto = jogadorCarregado.inv.dicionarioParaObjeto(dados_item)
+                                    jogadorCarregado.inv.mochila.append(item_objeto)
+                            # Reconstrói os equipamentos
+                        if 'equipamentos' in dadosSalvos and hasattr(jogadorCarregado, 'inv') and hasattr(
+                                jogadorCarregado.inv, 'equipamentos'):
+                            for slot, dados_item in dadosSalvos['equipamentos'].items():
+                                if dados_item:
+                                    item_objeto = jogadorCarregado.inv.dicionarioParaObjeto(dados_item)
+                                    jogadorCarregado.inv.equipamentos[slot] = item_objeto
+                                else:
+                                    jogadorCarregado.inv.equipamentos[slot] = None
+                         # Sincroniza a mochila internamente com o jogador
+                        jogadorCarregado.setInv(jogadorCarregado.inv.mochila)
+                        self.proximoEstado = EstadoCombate(jogadorCarregado)
+                        self.concluido = True
+                    else:
+                        print(f"O Slot {slotClicado} está vazio! Não é possível carregar.")
+                else:
+                    # Se o modo for "novo", prossegue para a criação de personagem normalmente
+                    self.proximoEstado = "NewGame"
+                    self.concluido = True
+
     def desenhar(self, tela):
         # Pinta o fundo
         tela.fill((40, 40, 50))
@@ -60,19 +108,26 @@ class Saves(EstadoBase):
         pygame.draw.rect(tela, 'gray', self.save2)
         pygame.draw.rect(tela, 'gray', self.save3)
         pygame.draw.polygon(tela, 'gray', [(20, 40), (60, 20), (60, 60)])
-        
-        txt_save1 = self.fonte.render("SAVE 1", True, (0, 0, 0))
-        txt_save2 = self.fonte.render("SAVE 2", True, (0, 0, 0))
-        txt_save3 = self.fonte.render("SAVE 3", True, (0, 0, 0))
-        
-        # 2. Cria retângulos para os textos e centraliza nos botões
-        rect_txt_save1 = txt_save1.get_rect(center= self.save1.center)
-        rect_txt_save2 = txt_save2.get_rect(center= self.save2.center)
-        rect_txt_save3 = txt_save3.get_rect(center= self.save3.center)
-        
-        # 3. Desenha os textos na tela
-        tela.blit(txt_save1, rect_txt_save1)
-        tela.blit(txt_save2, rect_txt_save2)
-        tela.blit(txt_save3, rect_txt_save3)
+
+        # Busca dinamicamente os dados no TinyDB para exibir na interface
+        dados1 = carregarJogo(1)
+        dados2 = carregarJogo(2)
+        dados3 = carregarJogo(3)
+        txt1 = f"{dados1['nome']} (Lvl {dados1['lvl']})" if dados1 else "VAZIO"
+        txt2 = f"{dados2['nome']} (Lvl {dados2['lvl']})" if dados2 else "VAZIO"
+        txt3 = f"{dados3['nome']} (Lvl {dados3['lvl']})" if dados3 else "VAZIO"
+        txtS1Titulo = self.fonte.render("SAVE 1", True, (0, 0, 0))
+        txtS1Info = self.fonte.render(txt1, True, (50, 50, 50))
+        txtS2Titulo = self.fonte.render("SAVE 2", True, (0, 0, 0))
+        txtS2Info = self.fonte.render(txt2, True, (50, 50, 50))
+        txtS3Titulo = self.fonte.render("SAVE 3", True, (0, 0, 0))
+        txtS3Info = self.fonte.render(txt3, True, (50, 50, 50))
+        # Desenha Títulos e Infos centralizados nos respectivos cartões
+        tela.blit(txtS1Titulo, txtS1Titulo.get_rect(center=(self.save1.centerx, self.save1.centery - 40)))
+        tela.blit(txtS1Info, txtS1Info.get_rect(center=(self.save1.centerx, self.save1.centery + 10)))
+        tela.blit(txtS2Titulo, txtS2Titulo.get_rect(center=(self.save2.centerx, self.save2.centery - 40)))
+        tela.blit(txtS2Info, txtS2Info.get_rect(center=(self.save2.centerx, self.save2.centery + 10)))
+        tela.blit(txtS3Titulo, txtS3Titulo.get_rect(center=(self.save3.centerx, self.save3.centery - 40)))
+        tela.blit(txtS3Info, txtS3Info.get_rect(center=(self.save3.centerx, self.save3.centery + 10)))
 
 

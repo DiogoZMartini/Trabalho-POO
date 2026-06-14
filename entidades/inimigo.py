@@ -65,7 +65,7 @@ class Inimigo (Personagem):
     def dropadoItem(self):
         chanceDrop = 0.75
         if random.random() <= chanceDrop:
-            itemSorteado = Item.gerarItemAleatorio(self.getLvl()) if hasattr(Item, 'gerarItemAleatorio') else None
+            itemSorteado = Item.gerarItemAleatorio()
             self.dropItem = itemSorteado
             return self.dropItem
         self.dropItem = None

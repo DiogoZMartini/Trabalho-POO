@@ -32,7 +32,7 @@ def inicializacaoDeCatalogos():
         {'nome':'Armadura de Couro','dano':-3,'descricao':'Uma armadura de couro','quantidadeMaxima':1,'efeito':'Aumenta a Defesa','preco':20,'tipo':'Armadura','raridade': 'Comum','uso': '+3 de defesa'},
         {'nome':'Capacete de Couro','dano':-2,'descricao':'Um capacete de couro','quantidadeMaxima':1, 'efeito': 'Aumenta a Defesa', 'preco':12, 'tipo':'Capacete', 'raridade': 'Comum','uso': '+2 de defesa'},
         {'nome':'Bota de Couro','dano':-1,'descricao':'Uma bota de couro','quantidadeMaxima':1, 'efeito': 'Aumenta a Defesa', 'preco':12, 'tipo':'Armadura', 'raridade': 'Comum','uso': '+1 de defesa'},
-        {'nome':'Colar do Aventureiro','dano':1,'descricao':'Um colar que pertencia a um aventureiro', 'quantidadeMaxima':1,'efeito':'Aumenta o Dano','preco':0,'tipo':'Amuleto','raridade': 'Comum','uso': '+1 de dano'},
+        {'nome':'Colar do Aventureiro','dano':1,'descricao':'Um colar que pertencia a um aventureiro', 'quantidadeMaxima':1,'efeito':'Aumenta o Dano','preco':0,'tipo':'Colar','raridade': 'Comum','uso': '+1 de dano'},
         {'nome':'Anel do Gigante','dano':5,'descricao':'Um anel que contem a força de um gigante','quantidadeMaxima':1,'efeito':'Aumenta o Dano','preco':100,'tipo':'Anel','raridade': 'Comum','uso': '+5 de dano'}
     ]
     tabela_itens.insert_multiple(lista_itens)
@@ -48,8 +48,14 @@ def classes():
     ]
     tabela_classe.insert_multiple(lista_classe)
 
-def salvarJogo(nome, vida, vidaMaxima, lvl, spa, spaEnergia, exp, classe, inv, equipamentos, dinheiro, maxXp):
-    tabela_jogador.upsert({'nome':nome,'vida':vida,'vidaMaxima': vidaMaxima,'lvl':lvl,'spa':spa,'spaEnergia':spaEnergia,'exp':exp,'classe':classe,'inv':inv, 'equipamentos':equipamentos,'dinheiro':dinheiro,'maxXp':maxXp}, Query().nome == nome)
+def salvarJogo(slot,nome, vida, dano, vidaMaxima, lvl, spa, spaEnergia, exp, classe, inv, equipamentos, dinheiro, maxXp):
+    tabela_jogador.upsert({'slot': slot,'nome':nome,'vida':vida,'dano':dano,'vidaMaxima': vidaMaxima,'lvl':lvl,'spa':spa,'spaEnergia':spaEnergia,'exp':exp,'classe':classe,'inv':inv, 'equipamentos':equipamentos,'dinheiro':dinheiro,'maxXp':maxXp}, Query().nome == nome)
+
+def carregarJogo(slot):
+    resultado = tabela_jogador.search(Query().slot == slot)
+    if resultado:
+        return resultado[0] # Retorna o dicionário com os dados do personagem
+    return None
 
 inicializacaoDeCatalogos()
 classes()

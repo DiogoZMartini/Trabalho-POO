@@ -3,6 +3,7 @@ from .estado_base import EstadoBase
 from entidades.inimigo import Inimigo
 from .estado_tela_vitoria import Vitoria
 from .estado_tela_derrota import Derrota
+from .estado_menupause import MenuPause
 
 
 class EstadoCombate(EstadoBase):
@@ -10,6 +11,8 @@ class EstadoCombate(EstadoBase):
         super().__init__()
         self.jogador = jogador
         self.inimigo = None
+        self.menuPause = MenuPause()
+        self.jogoPausado = False
         self.acaoAtiva = None
         self.carregarInimigo(nomeInimigoAlvo)
         if self.jogador and hasattr(self.jogador, 'inv') and self.jogador.inv:
@@ -69,13 +72,27 @@ class EstadoCombate(EstadoBase):
         return False
 
     def tratarEventos(self, eventos):
-        if self.jogador.inv:
-            retornoInventario = self.jogador.inv.tratarEventos(eventos)
+        # 1. Se o jogo estiver pausado, o MenuPause assume o controle absoluto
+        if self.jogoPausado:
+            self.menuPause.tratarEventos(eventos, self.jogador)
+            # Verifica se o jogador clicou em "Resume" lá dentro
+            if not self.menuPause.pause:
+                self.jogoPausado = False
+                self.menuPause.pause = True  # Reseta o estado interno dele para a próxima vez
+            # Se o menu de pause acionou uma mudança de estado (ex: voltou pro menu principal)
+            if self.menuPause.concluido:
+                self.proximoEstado = self.menuPause.proximoEstado
+                self.concluido = True
+            return  # Impede que o combate processe qualquer clique enquanto estiver pausado
+        # 2. Processa o inventário (Apenas se a bolsa estiver aberta)
+        if self.jogador.inv and hasattr(self, 'exibindoBolsa') and self.exibindoBolsa:
+            retornoInventario = self.jogador.inv.tratarEventos(eventos, inimigo=self.inimigo)
             if retornoInventario == "itemUsado":
                 self.exibindoBolsa = False
                 if not self.checarFimDoCombate():
                     self.turnoInimigo()
                 return
+        # 3. Atualiza o foco visual dos slots se a bolsa estiver aberta
         if hasattr(self, 'exibindoBolsa') and self.exibindoBolsa:
             ponteiroMouse = pygame.mouse.get_pos()
             resultadoFoco = self.jogador.inv.obterSlotPorPosicao(ponteiroMouse)
@@ -83,12 +100,18 @@ class EstadoCombate(EstadoBase):
                 self.jogador.inv.tipoSlotSelecionado, self.jogador.inv.slotSelecionado = resultadoFoco
             else:
                 self.jogador.inv.tipoSlotSelecionado, self.jogador.inv.slotSelecionado = None, None
+        # 4. Loop de eventos principal do combate
         for evento in eventos:
             if evento.type == pygame.KEYDOWN:
                 if evento.key == pygame.K_ESCAPE:
-                    self.proximoEstado = "Teste"
-                    self.concluido = True
-            if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
+                    # Se a bolsa de itens estiver aberta, o ESC primeiro fecha ela
+                    if hasattr(self, 'exibindoBolsa') and self.exibindoBolsa:
+                        self.exibindoBolsa = False
+                    else:
+                        # Se a bolsa já estiver fechada, abre o Menu de Pause
+                        self.jogoPausado = True
+                        self.menuPause.pause = True
+            elif evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
                 mousePos = pygame.mouse.get_pos()
                 slotFocado = self.jogador.inv.obterSlotPorPosicao(mousePos)
                 if slotFocado and slotFocado[0] == "botaoCombate":
@@ -349,3 +372,11 @@ class EstadoCombate(EstadoBase):
                 yOffset += 20
                 linhaAtual = palavra + " "
         tela.blit(fonteCorpo.render(linhaAtual, True, corTexto), (rect.x + margem, rect.y + yOffset))
+
+        if self.jogoPausado:
+            # Cria uma película escura transparente sobre o combate
+            superficieEscuro = pygame.Surface(tela.get_size(), pygame.SRCALPHA)
+            superficieEscuro.fill((0, 0, 0, 150))
+            tela.blit(superficieEscuro, (0, 0))
+            # Desenha a caixa azul e botões do pause por cima
+            self.menuPause.desenhar(tela)

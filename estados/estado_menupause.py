@@ -19,7 +19,8 @@ class MenuPause(EstadoBase):
         self.caixa_pop = pygame.Rect(0, 0, 400, 550)
         #Centraliza ela no meio da tela (400, 300)
         self.caixa_pop.center = (400, 300)
-    def tratarEventos(self, listaEventos):
+
+    def tratarEventos(self, listaEventos,jogador=None):
         # 1. Pega a posição do mouse uma única vez no frame
         mx, my = pygame.mouse.get_pos()
         click = False
@@ -28,7 +29,10 @@ class MenuPause(EstadoBase):
         for event in listaEventos:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1: # Clique com botão esquerdo
-                    click = True 
+                    click = True
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    self.pause = False
         
         # 3. Se houve clique em qualquer momento do frame, checa as colisões
         if click:
@@ -38,9 +42,33 @@ class MenuPause(EstadoBase):
             elif self.options.collidepoint((mx, my)):
                 pass
             elif self.voltamenu.collidepoint((mx, my)):
-                self.proximo_estado = "Menuprincipal"
+                from .estado_saves import Saves
+                from banco import salvarJogo
+                if jogador:
+                    # Coleta os dados convertendo o inventário em um formato legível para o TinyDB (listas/dicionários puros)
+                    invSalvavel = [jogador.inv.objetoParaDicionario(item) for item in jogador.inv.mochila if item]
+                    equipSalvavel = {}
+                    if hasattr(jogador, 'inv') and hasattr(jogador.inv, 'equipamentos'):
+                        for slot, item in jogador.inv.equipamentos.items():
+                            equipSalvavel[slot] = jogador.inv.objetoParaDicionario(item)
+                    salvarJogo(
+                        slot=Saves.slotAtivo,
+                        nome=jogador.getNome(),
+                        classe=jogador.classe,
+                        dano=jogador.getDano(),
+                        vida=jogador.getVida(),
+                        vidaMaxima=jogador.getVidaMaxima(),
+                        lvl=jogador.lvl,
+                        spa=jogador.spa,
+                        spaEnergia=jogador.spaEnergia,
+                        exp=jogador.getExp(),
+                        dinheiro=jogador.getDinheiro(),
+                        maxXp=jogador.maxXp,
+                        inv=invSalvavel,
+                        equipamentos=equipSalvavel
+                    )
+                self.proximoEstado = "MenuPrincipal"
                 self.concluido = True
-    
 
     def desenhar(self, tela):
             # Desenha os retângulos dos botões
