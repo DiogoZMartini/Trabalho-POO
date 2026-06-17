@@ -49,9 +49,9 @@ def inicializacaoDeCatalogos():
 
     # Template classe = {'nome':'','dano':,'vida':,'vidaMaxima':,'spa':''}
     lista_classe = [
-        {'nome':'Guerreiro','dano':2,'vida':50,'vidaMaxima':50,'spa':'Força Máxima'},
-        {'nome':'Mago','dano':4,'vida':30,'vidaMaxima':30,'spa':'Golpe Magico'},
-        {'nome':'Pelado','dano':1,'vida':40,'vidaMaxima':40,'spa':'Improviso'}
+        {'nome':'Guerreiro','dano':2,'vida':60,'vidaMaxima':50,'spa':'Força Máxima'},
+        {'nome':'Mago','dano':4,'vida':40,'vidaMaxima':30,'spa':'Golpe Magico'},
+        {'nome':'Pelado','dano':1,'vida':50,'vidaMaxima':40,'spa':'Improviso'}
     ]
     tabela_classe.insert_multiple(lista_classe)
 

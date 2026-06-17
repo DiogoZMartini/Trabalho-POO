@@ -42,14 +42,14 @@ class Mercador(EstadoBase):
         
         for event in listaEventos:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                self.proximoEstado = "MapaPrincipal"
+                self.proximoEstado = EstadoCombate(self.jogador)
                 self.concluido = True
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1: 
                 click = True 
                     
         if click:
             if self.voltar.collidepoint((mx, my)):
-                self.proximoEstado = "MapaPrincipal"
+                self.proximoEstado = EstadoCombate(self.jogador)
                 self.concluido = True
                 return
 
