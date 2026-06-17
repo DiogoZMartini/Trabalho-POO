@@ -1,0 +1,4 @@
+# Dentro do tratarEventos do seu estado do Mapa:
+if jogador_clicou_no_mercador:
+    self.proximoEstado = Mercador(self.jogador) # Passa o jogador para a loja
+    self.concluido = True
