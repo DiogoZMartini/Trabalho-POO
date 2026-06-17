@@ -1,6 +1,5 @@
 import pygame
 from .estado_base import EstadoBase
-from estados.estado_tela_vitoria import Vitoria
 from estados.estado_tela_derrota import Derrota
 
 class Exemplo(EstadoBase):
@@ -8,7 +7,6 @@ class Exemplo(EstadoBase):
         super().__init__()
         self.fonte = pygame.font.SysFont('Arial', 40)
         self.vitoria = False
-        self.objeto_vitoria = Vitoria()
         self.derrota = False
         self.objeto_derrota = Derrota()
     def tratarEventos(self, lista_eventos): # Metodo para tratar todos os eventos (inputs) no frame específico.

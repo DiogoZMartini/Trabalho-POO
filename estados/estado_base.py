@@ -1,7 +1,7 @@
 import pygame
 class EstadoBase:
     def __init__(self):
-        self.proximo_estado = None #Vai dizer para qual estado o gerenciador deve ir.
+        self.proximoEstado = None #Vai dizer para qual estado o gerenciador deve ir.
         self.concluido = False #Vai avisar se o estado atual terminou.
 
     def abrir(self): #Executa sempre que um estado se torna ativo (reseta variaveis).

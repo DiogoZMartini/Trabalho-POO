@@ -1,5 +1,6 @@
 import pygame
 from .estado_base import EstadoBase
+from .estado_saves import Saves
 
 class MenuPrincipal(EstadoBase):
     def __init__(self):
@@ -23,19 +24,16 @@ class MenuPrincipal(EstadoBase):
         for event in lista_eventos:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1: # Clique com botão esquerdo
-                    click = True 
+                    click = True
         
         # 3. Se houve clique em qualquer momento do frame, checa as colisões
         if click:
             if self.start.collidepoint((mx, my)):
-                self.proximo_estado = "Saves" 
+                self.proximoEstado = Saves(modo="novo")  # Avisa a tela de saves que é um jogo novo
                 self.concluido = True
             elif self.load.collidepoint((mx, my)):
-                self.proximo_estado = "Saves" 
+                self.proximoEstado = Saves(modo="carregar") # Avisa a tela de saves que é para carregar
                 self.concluido = True
-            elif self.quit.collidepoint((mx, my)):
-                pygame.quit()
-                import sys; sys.exit()
 
     def desenhar(self, tela):
         # Pinta o fundo

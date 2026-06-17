@@ -1,10 +1,13 @@
+import random
 from classe import Personagem
+from banco import tabela_inimigos
+from utilidade.itens import Item
 
 class Inimigo (Personagem):
-    def __init__(self, nome, dano, vida, lvl, recurso, dropExp, dropDinheiro):
-        super().__init__(nome, dano, vida, lvl, recurso)
+    def __init__(self, nome, dano, vida, vidaMaxima, lvl, spa, spaEnergia, dropExp, dropDinheiro):
+        super().__init__(nome, dano, vida, vidaMaxima, lvl, spa, spaEnergia)
         self.dropExp = dropExp
-        self.dropItem = []
+        self.dropItem = None
         self.dropDinheiro = dropDinheiro
 
     def getNome(self):
@@ -13,10 +16,14 @@ class Inimigo (Personagem):
         return super().getDano()
     def getVida(self):
         return super().getVida()
+    def getVidaMaxima(self):
+        return super().getVidaMaxima()
     def getLvl(self):
         return super().getLvl()
-    def getRecurso(self):
-        return super().getRecurso()
+    def getSpa(self):
+        return super().getSpa()
+    def getSpaEnergia(self):
+        return super().getSpaEnergia()
     def getDropExp(self):
         return self.dropExp
     def getDropItem(self):
@@ -29,10 +36,14 @@ class Inimigo (Personagem):
         super().setDano(dano)
     def setVida(self, vida):
         super().setVida(vida)
+    def setVidaMaxima(self, vidaMaxima):
+        super().setVidaMaxima(vidaMaxima)
     def setLvl(self, lvl):
         super().setLvl(lvl)
-    def setRecurso(self, recurso):
-        super().setRecurso(recurso)
+    def setSpa(self, spa):
+        super().setSpa(spa)
+    def setSpaEnergia(self, spaEnergia):
+        super().setSpaEnergia(spaEnergia)
     def setDropExp(self, dropexp):
         self.dropExp = dropexp
     def setDropItem(self, dropitem):
@@ -40,24 +51,66 @@ class Inimigo (Personagem):
     def setDropDinheiro(self, dropdinheiro):
         self.dropDinheiro = dropdinheiro
 
-    def ataque(self, dano):
-        super().ataque(dano)
-    def ataqueSpe(self, dano):
-        super().ataqueSpe(dano)
-    def curarVida(self, dano):
-        super().curarVida(dano)
     def tomarDano(self, dano):
         super().tomarDano(dano)
-    def expDropado(self):
-        pass
-    def expDropItem(self):
-        pass
-    def expDropDinheiro(self):
-        pass
+
+    def dropadoExp(self):
+        lvl = self.getLvl()
+        exp_base = (lvl * 25) + (lvl - 1) * 5
+        variacao_min = int(exp_base * 0.85)
+        variacao_max = int(exp_base * 1.15)
+        expFinal = random.randint(variacao_min, variacao_max)
+        return max(5, expFinal)
+
+    def dropadoItem(self):
+        chanceDrop = 0.75
+        if random.random() <= chanceDrop:
+            itemSorteado = Item.gerarItemAleatorio()
+            self.dropItem = itemSorteado
+            return self.dropItem
+        self.dropItem = None
+        return None
+    
+    def dropadoDinheiro(self):
+        minimo = self.getLvl() * 5
+        maximo = self.getLvl() * 15
+        dinheiroFinal = random.randint(minimo, maximo)
+        return dinheiroFinal
+
+    def defesa(self):
+        defesaTotal = 0
+        return defesaTotal
+
+    @classmethod
+    def gerarInimigoAleatorio(cls, lvlJogador):
+        todosInimigos = tabela_inimigos.all()
+        inimigosValidos = [i for i in todosInimigos if i['nome'] != 'Mercador']
+        if not inimigosValidos:
+            return cls(nome="Zumbie", dano=5, vida=30,vidaMaxima=30, lvl=lvlJogador, recurso=0, spa="Mordida")
+        dadosBase = random.choice(inimigosValidos)
+        lvlSorteado = random.randint(lvlJogador - 1, lvlJogador + 1)
+        if lvlSorteado < 1:
+            lvlSorteado = 1
+        multiplicadorStatus = 1 + (lvlSorteado - 1) * 0.1
+        vidaFinal = int(dadosBase['vida'] * multiplicadorStatus)
+        danoFinal = int(dadosBase['dano'] * multiplicadorStatus)
+        dropExpCalculado = lvlSorteado * 25
+        dropDinheiroCalculado = lvlSorteado * random.randint(5, 15)
+        return cls(
+            nome=dadosBase['nome'],
+            dano=danoFinal,
+            vida=vidaFinal,
+            vidaMaxima=vidaFinal,
+            lvl=lvlSorteado,
+            spa=dadosBase.get('spa', 'Ataque Básico'),
+            spaEnergia= 0,
+            dropExp = dropExpCalculado,
+            dropDinheiro = dropDinheiroCalculado
+        )
 
 class Mercador(Inimigo):
-    def __init__(self, nome, dano, vida, lvl, recurso, dropExp, dropdinheiro):
-        super().__init__(nome, dano, vida, lvl, recurso, dropExp, dropdinheiro)
+    def __init__(self, nome, dano, vida, vidaMaxima, spa, spaEnergia, lvl, dropExp, dropdinheiro):
+        super().__init__(nome, dano, vida, vidaMaxima, lvl, spa, spaEnergia, dropExp, dropdinheiro)
         self.mercadoria = []
 
     def getNome(self):
@@ -66,10 +119,14 @@ class Mercador(Inimigo):
         return super().getDano()
     def getVida(self):
         return super().getVida()
+    def setVidaMaxima(self, vidaMaxima):
+        super().setVidaMaxima(vidaMaxima)
     def getLvl(self):
         return super().getLvl()
-    def getRecurso(self):
-        return super().getRecurso()
+    def getSpa(self):
+        return super().getSpa()
+    def getSpaEnergia(self):
+        return super().getSpaEnergia()
     def getDropExp(self):
         return super().getDropExp()
     def getDropItem(self):
@@ -84,10 +141,14 @@ class Mercador(Inimigo):
         super().setDano(dano)
     def setVida(self, vida):
         super().setVida(vida)
+    def setVidaMaxima(self, vidaMaxima):
+        super().setVidaMaxima(vidaMaxima)
     def setLvl(self, lvl):
         super().setLvl(lvl)
-    def setRecurso(self, recurso):
-        super().setRecurso(recurso)
+    def setSpa(self, spa):
+        super().setSpa(spa)
+    def setSpaEnergia(self, spaEnergia):
+        super().setSpaEnergia(spaEnergia)
     def setDropExp(self, dropexp):
         super().setDropExp(dropexp)
     def setDropItem(self, dropitem):
@@ -97,12 +158,6 @@ class Mercador(Inimigo):
     def setMercadoria(self, mercadoria):
         self.mercadoria = mercadoria
 
-    def ataque(self, dano):
-        super().ataque(dano)
-    def ataqueSpe(self, dano):
-        super().ataqueSpe(dano)
-    def curarVida(self, dano):
-        super().curarVida(dano)
     def tomarDano(self, dano):
         super().tomarDano(dano)
     def expDropado(self):

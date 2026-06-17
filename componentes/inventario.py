@@ -6,11 +6,11 @@ from tinydb import Query
 class Inventario:
     def __init__(self, jogador, modo):
         self.jogadorObjeto = jogador
-        self.nomeJogador = jogador.getNome()
         self.modo = modo
         self.slotSelecionado = None
         self.tipoSlotSelecionado = None
         self.mochila = []
+        self.equipamentos = {k: None for k in ["Capacete", "Colar", "Arma", "Armadura", "Bota", "Anel"]}
         self.equipamentos = {}
         self.dadosJogador = None
         self.slotsRegiao = []
@@ -18,7 +18,7 @@ class Inventario:
         self.carregarInventario()
 
     def carregarInventario(self):
-        resultado = tabela_jogador.search(Query().nome == self.nomeJogador)
+        resultado = tabela_jogador.search(Query().nome == self.jogadorObjeto.getNome())
         if resultado:
             dados_brutos = resultado[0]
             self.dadosJogador = dados_brutos
@@ -28,9 +28,8 @@ class Inventario:
                 if itemDit:
                     self.mochila.append(self.dicionarioParaObjeto(itemDit))
             eqBanco = dados_brutos.get('equipamentos', {})
-            self.equipamentos = {k: None for k in ["Capacete", "Colar", "Arma", "Armadura", "Bota", "Anel"]}
             for chave, itemDit in eqBanco.items():
-                if itemDit:
+                if itemDit and chave in self.equipamentos:
                     self.equipamentos[chave] = self.dicionarioParaObjeto(itemDit)
             self.jogadorObjeto.setInv(self.mochila)
 
@@ -58,7 +57,7 @@ class Inventario:
                     'equipamentos': eqSalvavel,
                     'vida': self.jogadorObjeto.getVida()
                 },
-                Query().nome == self.nomeJogador
+                Query().nome == self.jogadorObjeto.getNome()
             )
 
     def objetoParaDicionario(self, item):
@@ -76,65 +75,99 @@ class Inventario:
             'uso': getattr(item, 'uso', None)
         }
 
-    def tratarEventos(self, eventos):
-        from entidades.jogador import Jogador
+    def tratarEventos(self, eventos, inimigo=None):
         ponteiroMouse = pygame.mouse.get_pos()
         resultadoFoco = self.obterSlotPorPosicao(ponteiroMouse)
         if resultadoFoco:
             self.tipoSlotSelecionado, self.slotSelecionado = resultadoFoco
         else:
             self.tipoSlotSelecionado, self.slotSelecionado = None, None
-        for evento in eventos:
-            if evento.type == pygame.MOUSEBUTTONDOWN:
-                largura, altura = pygame.display.get_surface().get_size()
-                if ponteiroMouse[0] > largura // 2 and ponteiroMouse[1] > altura // 2:
-                    if evento.button == 4:  # Scroll para CIMA
-                        self.scroll_y = min(0, self.scroll_y + 15)
-                    elif evento.button == 5:  # Scroll para BAIXO
-                        self.scroll_y -= 15
-            if evento.type == pygame.MOUSEBUTTONDOWN and self.slotSelecionado is not None:
-                if self.tipoSlotSelecionado == "mochila":
-                    idx = self.slotSelecionado
-                    if idx < len(self.mochila):
-                        item = self.mochila[idx]
-                        if evento.button == 1: # Clique Esquerdo: Usar / Equipar
-                            if item.getTipo() == 'Consumivel':
-                                sucesso = item.aplicarEfeitoItem(item, self.jogadorObjeto)
-                                if sucesso:
-                                    self.jogadorObjeto.setVida(self.dadosJogador['vida'])
-                                    self.mochila.pop(idx)
-                                    self.salvarInventario()
-                            else:
-                                depara_slots = {
-                                    "Capacete": "Capacete",
-                                    "Colar": "Colar",
-                                    "Arma": "Arma",
-                                    "Armadura": "Armadura",
-                                    "Bota": "Bota",
-                                    "Anel": "Anel"
-                                }
-                                tipoItem = item.getTipo()
-                                if tipoItem in depara_slots:
-                                    slotDestino = depara_slots[tipoItem]
-                                    itemAntigo = self.equipamentos[slotDestino]
-                                    self.equipamentos[slotDestino] = item
-                                    if itemAntigo:
-                                        self.mochila[idx] = itemAntigo
+        if self.modo == 'padrao':
+            for evento in eventos:
+                if evento.type == pygame.MOUSEBUTTONDOWN:
+                    largura, altura = pygame.display.get_surface().get_size()
+                    if ponteiroMouse[0] > largura // 2 and ponteiroMouse[1] > altura // 2:
+                        if evento.button == 4:  # Scroll para CIMA
+                            self.scroll_y = min(0, self.scroll_y + 15)
+                        elif evento.button == 5:  # Scroll para BAIXO
+                            self.scroll_y -= 15
+                if evento.type == pygame.MOUSEBUTTONDOWN and self.slotSelecionado is not None:
+                    if self.tipoSlotSelecionado == "mochila":
+                        idx = self.slotSelecionado
+                        if idx < len(self.mochila):
+                            item = self.mochila[idx]
+                            if evento.button == 1: # Clique Esquerdo: Usar / Equipar
+                                if item.getTipo() == 'Consumivel':
+                                    efeitoItemMinu = item.getEfeito().lower()
+                                    if "efeito" in efeitoItemMinu:
+                                        dados_atuais = {
+                                            "vida": self.jogadorObjeto.getVida(),
+                                            "vidaMaxima": self.jogadorObjeto.getVidaMaxima()
+                                        }
+                                        sucesso = item.aplicarEfeitoItem(dados_atuais)
+                                        if sucesso:
+                                            self.jogadorObjeto.setVida(dados_atuais['vida'])
+                                            self.mochila.pop(idx)
+                                            self.salvarInventario()
                                     else:
+                                        print(
+                                            f"[Aviso] No modo padrão, você só pode consumir Poções de Vida! '{item.getNome()}' bloqueado.")
+                                else:
+                                    depara_slots = {
+                                        "Capacete": "Capacete",
+                                        "Colar": "Colar",
+                                        "Arma": "Arma",
+                                        "Armadura": "Armadura",
+                                        "Bota": "Bota",
+                                        "Anel": "Anel"
+                                    }
+                                    tipoItem = item.getTipo()
+                                    if tipoItem in depara_slots:
+                                        slotDestino = depara_slots[tipoItem]
+                                        itemAntigo = self.equipamentos.get(slotDestino, None)
+                                        self.equipamentos[slotDestino] = item
+                                        if itemAntigo:
+                                            self.mochila[idx] = itemAntigo
+                                        else:
+                                            self.mochila.pop(idx)
+                                        self.salvarInventario()
+                            elif evento.button == 3:  # Clique Direito: Remove
+                                self.mochila.pop(idx)
+                                self.salvarInventario()
+                    elif self.tipoSlotSelecionado == "equipamento":
+                        chave = self.slotSelecionado
+                        if self.equipamentos[chave] and evento.button == 3:  # Clique direito desequipa
+                            if len(self.mochila) < 15:
+                                self.mochila.append(self.equipamentos[chave])
+                                self.equipamentos[chave] = None
+                                self.salvarInventario()
+                            else:
+                                print("Mochila cheia para desequipar!")
+        elif self.modo == "combate":
+            for evento in eventos:
+                if evento.type == pygame.MOUSEBUTTONDOWN and self.slotSelecionado is not None:
+                    if self.tipoSlotSelecionado == "mochila" and evento.button == 1:  # Clique Esquerdo
+                        idx = self.slotSelecionado
+                        if idx < len(self.mochila):
+                            item = self.mochila[idx]
+                            if item.getTipo() == 'Consumivel':
+                                if item.getEfeito() == 'Cura':
+                                    if self.jogadorObjeto.getVida() >= self.jogadorObjeto.getVidaMaxima():
+                                        return None
+                                    elif item.aplicarEfeitoItem(self.jogadorObjeto):
+                                        if hasattr(self, 'dadosJogador') and self.dadosJogador:
+                                            self.dadosJogador['vida'] = self.jogadorObjeto.getVida()
                                         self.mochila.pop(idx)
-                                    self.salvarInventario()
-                        elif evento.button == 3:  # Clique Direito: Remove
-                            self.mochila.pop(idx)
-                            self.salvarInventario()
-                elif self.tipoSlotSelecionado == "equipamento":
-                    chave = self.slotSelecionado
-                    if self.equipamentos[chave] and evento.button == 3:  # Clique direito desequipa
-                        if len(self.mochila) < 15:
-                            self.mochila.append(self.equipamentos[chave])
-                            self.equipamentos[chave] = None
-                            self.salvarInventario()
-                        else:
-                            print("Mochila cheia para desequipar!")
+                                        self.salvarInventario()
+                                        return "itemUsado"
+                                elif item.getEfeito() == 'Causa Dano':
+                                    if item.aplicarEfeitoItem(self.jogadorObjeto, alvo=inimigo):
+                                        self.mochila.pop(idx)
+                                        self.salvarInventario()
+                                        return "itemUsado"
+                            else:
+                                print(f"Você não pode equipar ou usar '{item.getNome()}' durante o combate!")
+        return None
 
     def obterSlotPorPosicao(self, pos):
         for rect, tipo, identificador in self.slotsRegiao:
@@ -269,7 +302,7 @@ class Inventario:
                 tela.blit(txtLinha, (areaRecorte.x, yAtual))
                 yAtual += 25
 
-            # ALTERADO: 3. Processa e desenha a seção de "Uso" se ela existir no item
+            # 3. Processa e desenha a seção de "Uso" se ela existir no item
             if hasattr(itemParaDescrever, 'uso') and itemParaDescrever.uso:
                 textoUso = f"Efeito: {itemParaDescrever.uso}"
                 palavrasUso = textoUso.split(' ')
@@ -304,185 +337,42 @@ class Inventario:
 
     def desenharPaginaCombate(self, tela):
         largura, altura = tela.get_size()
-        self.slotsRegiao = []
-
-        # Fontes de renderização
-        fonteInfo = pygame.font.SysFont("Arial", 14, bold=True)
-        fonteTexto = pygame.font.SysFont("Arial", 16)
-        fonteDestaque = pygame.font.SysFont("Arial", 14, bold=True, italic=True)
-
-        # 1. DEFINIÇÃO DAS CORES E GEOMETRIA PRINCIPAL
-        corBorda = (0, 0, 0)
-        corFundoAbas = (50, 50, 50)
-        corFundoDesc = (35, 35, 35)
-        alturaHUD = 50
-        alturaGradeCombate = altura - 120
-
-        # Dados simulados do Inimigo
-        nomeInimigo = "Zumbie"
-        vidaInimigo, vidaMaxInimigo = 30, 30
-        lvlInimigo = 5
-
-        # ALTERADO: Coleta de dados usando os Métodos Getters da sua Classe Jogador
-        if hasattr(self, 'jogadorObjeto') and self.jogadorObjeto:
-            nomeJogador = self.jogadorObjeto.getNome()
-            vidaJogador = self.jogadorObjeto.getVida()
-            lvlJogador = self.jogadorObjeto.getLvl()
-            dinheiroJogador = self.jogadorObjeto.getDinheiro()
-            expAtual = self.jogadorObjeto.getExp()
-            # Vida máxima pode vir de um atributo estático ou do dicionário base seguro
-            vidaMaxJogador = self.dadosJogador.get('vidaMaxima', 100) if self.dadosJogador else 100
-        else:
-            # Fallback de segurança caso o objeto não tenha sido inicializado
-            nomeJogador = "Herói"
-            vidaJogador = 100
-            vidaMaxJogador = 100
-            lvlJogador = 1
-            dinheiroJogador = 0
-            expAtual = 0
-
-        # 2. RENDERIZAR PARTE SUPERIOR: HUDs E ÁREA DOS BONECOS
-
-        # Borda externa do template geral
-        pygame.draw.rect(tela, corBorda, (0, 0, largura, altura), 4)
-
-        # HUD Jogador
-        hudJogadorRect = pygame.Rect(10, 10, 250, 65)
-        pygame.draw.rect(tela, corFundoAbas, hudJogadorRect, border_radius=4)
-        pygame.draw.rect(tela, corBorda, hudJogadorRect, 2, border_radius=4)
-        txtJog = fonteInfo.render(f"{nomeJogador} - Lv.{lvlJogador} | R$ {dinheiroJogador}", True, (255, 255, 255))
-        tela.blit(txtJog, (hudJogadorRect.x + 8, hudJogadorRect.y + 4))
-
-        # Barra de Vida Jogador
-        pygame.draw.rect(tela, (100, 0, 0), (hudJogadorRect.x + 8, hudJogadorRect.y + 22, 234, 12))
-        larguraBarraJog = int(234 * (vidaJogador / vidaMaxJogador))
-        pygame.draw.rect(tela, (0, 200, 80), (hudJogadorRect.x + 8, hudJogadorRect.y + 22, larguraBarraJog, 12))
-
-        # Cálculo dinâmico do XP baseado no getter
-        expNecessaria = 100 * lvlJogador
-
-        # Barra de XP desenhada
-        pygame.draw.rect(tela, (40, 40, 40), (hudJogadorRect.x + 8, hudJogadorRect.y + 38, 234, 8))
-        larguraBarraXp = int(234 * min(1.0, (expAtual / max(1, expNecessaria))))
-        pygame.draw.rect(tela, (0, 150, 255), (hudJogadorRect.x + 8, hudJogadorRect.y + 38, larguraBarraXp, 8))
-
-        # Texto do EXP desenhado
-        txtXp = pygame.font.SysFont("Arial", 10, bold=True).render(f"EXP: {expAtual}/{expNecessaria}", True,
-                                                                   (180, 180, 180))
-        tela.blit(txtXp, (hudJogadorRect.x + 8, hudJogadorRect.y + 48))
-
-        # HUD Inimigo (Superior Direito)
-        hudInimigoRect = pygame.Rect(largura - 260, 10, 250, alturaHUD)
-        pygame.draw.rect(tela, corFundoAbas, hudInimigoRect, border_radius=4)
-        pygame.draw.rect(tela, corBorda, hudInimigoRect, 2, border_radius=4)
-        txtInim = fonteInfo.render(f"{nomeInimigo} - Lv.{lvlInimigo}", True, (255, 255, 255))
-        tela.blit(txtInim, (hudInimigoRect.x + 8, hudInimigoRect.y + 6))
-
-        # Barra de Vida Inimigo
-        pygame.draw.rect(tela, (100, 0, 0), (hudInimigoRect.x + 8, hudInimigoRect.y + 26, 234, 14))
-        larguraBarraInim = int(234 * (vidaInimigo / vidaMaxInimigo))
-        pygame.draw.rect(tela, (220, 50, 50), (hudInimigoRect.x + 8, hudInimigoRect.y + 26, larguraBarraInim, 14))
-
-        # Box Boneco Jogador (Esquerda)
-        bonecoJogadorRect = pygame.Rect(10, 70, 200, 200)
-        pygame.draw.rect(tela, (70, 70, 70), bonecoJogadorRect, border_radius=4)
-        pygame.draw.rect(tela, corBorda, bonecoJogadorRect, 2, border_radius=4)
-        txtBoxJog = fonteTexto.render("Boneco Jogador", True, (200, 200, 200))
-        tela.blit(txtBoxJog, (bonecoJogadorRect.centerx - txtBoxJog.get_width() // 2, bonecoJogadorRect.centery - 10))
-
-        # Box Boneco Inimigo (Direita)
-        bonecoInimigoRect = pygame.Rect(largura - 210, 70, 200, 200)
-        pygame.draw.rect(tela, (70, 70, 70), bonecoInimigoRect, border_radius=4)
-        pygame.draw.rect(tela, corBorda, bonecoInimigoRect, 2, border_radius=4)
-        txtBoxInim = fonteTexto.render("Boneco Inimigo", True, (200, 200, 200))
-        tela.blit(txtBoxInim, (bonecoInimigoRect.centerx - txtBoxInim.get_width() // 2, bonecoInimigoRect.centery - 10))
-
-        # 3. RENDERIZAR REGIAO INFERIOR: MENU DE AÇÕES & DESCRIÇÕES
-        pygame.draw.line(tela, corBorda, (0, alturaGradeCombate), (largura, alturaGradeCombate), 4)
-        larguraMetade = largura // 2
-        rectDescricao = pygame.Rect(0, alturaGradeCombate, larguraMetade, altura - alturaGradeCombate)
-        rectAcoes = pygame.Rect(larguraMetade, alturaGradeCombate, larguraMetade, altura - alturaGradeCombate)
-        pygame.draw.rect(tela, corFundoDesc, rectDescricao)
-        pygame.draw.rect(tela, corFundoAbas, rectAcoes)
-        pygame.draw.line(tela, corBorda, (larguraMetade, alturaGradeCombate), (larguraMetade, altura), 4)
-
-        opcoesMenu = [
-            {"nome": "ATAQUE", "id": "ataque"},
-            {"nome": "ITEM", "id": "item"},
-            {"nome": "HABILIDADE", "id": "habilidade"},
-            {"nome": "FUGIR", "id": "fugir"}
-        ]
-        startX = rectAcoes.x + 30
-        startY = rectAcoes.y + 25
-        espacamentoX = 160
-        espacamentoY = 40
-        mousePos = pygame.mouse.get_pos()
-        acaoFocada = None
-
-        for i, opcao in enumerate(opcoesMenu):
-            coluna = i % 2
-            linha = i // 2
-            posX = startX + (coluna * espacamentoX)
-            posY = startY + (linha * espacamentoY)
-            rectOpcao = pygame.Rect(posX, posY, 140, 30)
-            self.slotsRegiao.append((rectOpcao, "botao_combate", opcao["id"]))
-            if rectOpcao.collidepoint(mousePos):
-                acaoFocada = opcao["id"]
-                ponto1 = (posX - 15, posY + 6)
-                ponto2 = (posX - 15, posY + 18)
-                ponto3 = (posX - 5, posY + 12)
-                pygame.draw.polygon(tela, (255, 255, 255), [ponto1, ponto2, ponto3])
-            corTextoBotao = (255, 215, 0) if acaoFocada == opcao["id"] else (240, 240, 240)
-            txtOpcao = fonteTexto.render(opcao["nome"], True, corTextoBotao)
-            tela.blit(txtOpcao, (posX, posY))
-
-        # 4. EXIBIÇÃO DINÂMICA DA DESCRIÇÃO (PAINEL INFERIOR ESQUERDO)
-        tituloDesc = "Menu de Combate"
-        corpoDesc = "Escolha uma ação para iniciar seu turno."
-        efeitoDesc = ""
-
-        if acaoFocada == "ataque":
-            tituloDesc = "Ação: Realizar Ataque"
-            corpoDesc = "Usa sua arma equipada para golpear diretamente a criatura inimiga."
-            armaEquipada = self.equipamentos.get("Arma")
-
-            # Soma o dano base do Objeto Jogador com o modificador da arma ativa
-            danoBase = self.jogadorObjeto.getDano() if hasattr(self, 'jogadorObjeto') else 5
-            danoArma = armaEquipada.getDano() if armaEquipada else 0
-            efeitoDesc = f"Dano Estimado: {danoBase + danoArma} PTs"
-
-        elif acaoFocada == "item":
-            tituloDesc = "Ação: Abrir Mochila"
-            corpoDesc = "Acessa seus consumíveis rápidos de recuperação, buffs ou arremessáveis."
-            # Usa a lista do objeto via getter
-            tamanhoInv = len(self.jogadorObjeto.getInv()) if hasattr(self, 'jogadorObjeto') else len(self.mochila)
-            efeitoDesc = f"Itens carregados no inventário: {tamanhoInv}/15"
-
-        elif acaoFocada == "habilidade":
-            tituloDesc = "Ação: Habilidades Especiais"
-            corpoDesc = f"Gasta pontos do seu recurso ativo de {self.jogadorObjeto.getClasse() if hasattr(self, 'jogadorObjeto') else 'Classe'}."
-            efeitoDesc = f"Recurso Disponível: {self.jogadorObjeto.getRecurso() if hasattr(self, 'jogadorObjeto') else 0} Pts"
-
-        elif acaoFocada == "fugir":
-            tituloDesc = "Ação: Retirada"
-            corpoDesc = "Tenta escapar da batalha atual e retornar ao mapa de exploração seguro."
-            efeitoDesc = "Chance de sucesso baseada na sua Velocidade."
-
-        txtTit = fonteInfo.render(tituloDesc, True, (255, 215, 0))
-        tela.blit(txtTit, (rectDescricao.x + 20, rectDescricao.y + 15))
-        palavras = corpoDesc.split(' ')
-        linhaLog = ""
-        yLinha = rectDescricao.y + 40
-        for pal in palavras:
-            if fonteTexto.size(linhaLog + pal + " ")[0] < rectDescricao.width - 40:
-                linhaLog += pal + " "
-            else:
-                tela.blit(fonteTexto.render(linhaLog, True, (220, 220, 220)), (rectDescricao.x + 20, yLinha))
-                yLinha += 20
-                linhaLog = pal + " "
-        if linhaLog:
-            tela.blit(fonteTexto.render(linhaLog, True, (220, 220, 220)), (rectDescricao.x + 20, yLinha))
-            yLinha += 22
-        if efeitoDesc:
-            txtEf = fonteDestaque.render(efeitoDesc, True, (0, 230, 150))
-            tela.blit(txtEf, (rectDescricao.x + 20, yLinha))
+        alturaPainelInferior = 150
+        rectPainelAcoes = pygame.Rect(largura // 2, altura - alturaPainelInferior, largura // 2, alturaPainelInferior)
+        colunasGrid = 5
+        linhasGrid = 3
+        tamSlot = 36
+        espaca = 6
+        gradeW = (colunasGrid * tamSlot) + ((colunasGrid - 1) * espaca)
+        gradeH = (linhasGrid * tamSlot) + ((linhasGrid - 1) * espaca)
+        startGridX = rectPainelAcoes.x + (rectPainelAcoes.width - gradeW) // 2
+        startGridY = rectPainelAcoes.y + (rectPainelAcoes.height - gradeH) // 2
+        for l in range(linhasGrid):
+            for c in range(colunasGrid):
+                idx = (l * colunasGrid) + c
+                if idx >= 15:
+                    break
+                slotX = startGridX + c * (tamSlot + espaca)
+                slotY = startGridY + l * (tamSlot + espaca)
+                rectSlot = pygame.Rect(slotX, slotY, tamSlot, tamSlot)
+                self.slotsRegiao.append((rectSlot, "mochila", idx))
+                focado = (self.tipoSlotSelecionado == "mochila" and self.slotSelecionado == idx)
+                corBorda = (255, 215, 0) if focado else (90, 90, 90)
+                pygame.draw.rect(tela, (50, 50, 50), rectSlot, border_radius=4)
+                pygame.draw.rect(tela, corBorda, rectSlot, 1, border_radius=4)
+                if idx < len(self.mochila):
+                    itemMochila = self.mochila[idx]
+                    if hasattr(itemMochila, 'img') and itemMochila.img:
+                        try:
+                            imgSurface = pygame.image.load(itemMochila.img).convert_alpha()
+                            areaInterna = rectSlot.inflate(-6, -6)
+                            imgRedimensionada = pygame.transform.scale(imgSurface,(areaInterna.width, areaInterna.height))
+                            tela.set_clip(areaInterna)
+                            tela.blit(imgRedimensionada, (areaInterna.x, areaInterna.y))
+                            tela.set_clip(None)
+                        except:
+                            pygame.draw.rect(tela, (140, 140, 140), rectSlot.inflate(-8, -8), border_radius=2)
+                    else:
+                        pygame.draw.rect(tela, (140, 140, 140), rectSlot.inflate(-8, -8), border_radius=2)
+                    if itemMochila.getTipo() != "Consumivel":
+                        pygame.draw.circle(tela, (200, 30, 30), (rectSlot.right - 6, rectSlot.top + 6), 3)

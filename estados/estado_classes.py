@@ -1,33 +1,62 @@
 import pygame
 from .estado_base import EstadoBase
+from .estado_combate import EstadoCombate
+from entidades.jogador import Jogador
+from banco import tabela_classe
+from tinydb import Query
 
 class Classes(EstadoBase):
-    def __init__(self):
+    def __init__(self, nomeJogador="Herói"):
         super().__init__()
         # Inicializa o sistema de fontes do Pygame
         pygame.font.init()
         # Define a fonte (Nome da fonte ou None para padrão, Tamanho)
         self.fonte = pygame.font.SysFont(None, 40)
         #guardar a classe selecionada
-        self.classe_selecionada = ""
-        # Seus botões originais
+        self.classeSelecionada = ""
+        self.nomeJogador = nomeJogador
+        # Botões originais
         self.guerreiro = pygame.Rect(150, 300, 150, 300)
         self.guerreiro.center = (200, 300)
         self.mago = pygame.Rect(300, 300, 150, 300)
         self.mago.center = (400, 300)
         self.pelado = pygame.Rect(450, 300, 150, 300)
         self.pelado.center = (600, 300)
-        self.voltar = pygame.Rect(20,20,40,40)      
-    def tratarEventos(self, lista_eventos):
+        self.voltar = pygame.Rect(20,20,40,40)
+
+    def criarJogador(self, nomeClasse):
+        self.classeSelecionada = nomeClasse
+        resultado = Query()
+        dados_classe = tabela_classe.search(resultado.nome == nomeClasse.capitalize())
+        if dados_classe:
+            status = dados_classe[0]
+            novoJogador = Jogador(
+                nome=self.nomeJogador,
+                dano=status['dano'],
+                vida=status['vida'],
+                vidaMaxima=status['vidaMaxima'],
+                lvl=1,
+                spa=status['spa'],
+                spaEnergia=0,
+                exp=0,
+                classe=status['nome'],
+                dinheiro=0,
+                maxXp=10
+            )
+            self.proximoEstado = EstadoCombate(novoJogador)
+            self.concluido = True
+        else:
+            print(f"Erro: Classe {nomeClasse} não encontrada na tabela_classe do banco de dados.")
+    def tratarEventos(self, listaEventos):
         # 1. Pega a posição do mouse uma única vez no frame
         mx, my = pygame.mouse.get_pos()
         click = False
         
         # 2. Varre a lista de eventos que o Gerenciador passou
-        for event in lista_eventos:
+        for event in listaEventos:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    self.proximo_estado = "Newgame" 
+                    self.proximoEstado = "NewGame"
                     self.concluido = True
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1: # Clique com botão esquerdo
@@ -35,18 +64,14 @@ class Classes(EstadoBase):
             # 3. Se houve clique em qualquer momento do frame, checa as colisões
         if click:
             if self.voltar.collidepoint((mx, my)):
-                self.proximo_estado = "Newgame" 
+                self.proximoEstado = "NewGame"
                 self.concluido = True
-            
             elif self.guerreiro.collidepoint((mx, my)):
-                self.classe_selecionada = "guerreiro"
-                print(self.classe_selecionada)
+                self.criarJogador("guerreiro")
             elif self.mago.collidepoint((mx, my)):
-                self.classe_selecionada = "mago"
-                print(self.classe_selecionada)
+                self.criarJogador("mago")
             elif self.pelado.collidepoint((mx, my)):
-                self.classe_selecionada = "pelado"
-                print(self.classe_selecionada)
+                self.criarJogador("pelado")
                 
     def desenhar(self, tela):
         # Pinta o fundo
