@@ -16,25 +16,89 @@ class Mercador(EstadoBase):
         
         # Abas da Loja: "COMPRAR", "VENDER" ou iniciar "ATAQUE"
         self.aba_atual = "COMPRAR" 
-        self.tab_comprar = pygame.Rect(100, 100, 150, 40)
-        self.tab_vender = pygame.Rect(260, 100, 150, 40)
+        self.tab_comprar = pygame.Rect(130, 100, 160, 40) # Posições que acertamos para não sobrepor
+        self.tab_vender = pygame.Rect(300, 100, 160, 40)
         self.btn_atacar = pygame.Rect(600, 100, 100, 40) # Botão de agressão externa
         
-        self.itens_loja = []
-        self.carregar_itens_do_banco()
-        
+        # Sistema de mensagens visuais
         self.mensagem_feedback = ""
         self.tempo_feedback = 0
 
+        # CONFIGURAÇÃO DE ITENS (Ordem corrigida):
+        self.quantidade_itens_loja = 5  # 1º Define a quantidade primeiro
+        self.itens_loja = []            # 2º Cria a lista vazia
+        self.carregar_itens_do_banco()  # 3º Só agora carrega do banco de dados!
+
+
     def carregar_itens_do_banco(self):
-        """Busca catálogo e gera posições fixas para os botões de COMPRA"""
+        """Busca o catálogo do TinyDB, aleatoriza os produtos e altera o preço por raridade"""
+        import random
+        import copy
+        
         todos_itens = tabela_itens.all()
+        # Filtra itens válidos (com preço maior que 0)
         itens_validos = [i for i in todos_itens if i.get('preco', 0) > 0]
         
+        qtd = min(self.quantidade_itens_loja, len(itens_validos))
+        itens_sorteados = random.sample(itens_validos, qtd)
+        
+        lista_raridades = ["Comum", "Raro", "Epico", "Lendario"]
+        pesos_raridade = [0.60, 0.25, 0.12, 0.03]
+        
         y_inicial = 170
-        for idx, item_dados in enumerate(itens_validos):
+        for idx, item_original in enumerate(itens_sorteados):
+            item_modificado = copy.deepcopy(item_original)
+            
+            nova_raridade = random.choices(lista_raridades, weights=pesos_raridade, k=1)[0]
+            item_modificado['raridade'] = nova_raridade
+            
+            # ---- AJUSTE DO NOME DINÂMICO AQUI ----
+            # Adiciona a raridade ao nome do item apenas se não for Comum
+            if nova_raridade != "Comum":
+                item_modificado['nome'] = f"{item_original['nome']} ({nova_raridade})"
+            
+            preco_base = item_modificado['preco']
+            dano_base = item_modificado.get('dano', 0)
+            tipo_item = item_modificado.get('tipo', '')
+            
+            # Aplica multiplicadores de preço e bônus de status baseados na raridade
+            if nova_raridade == "Raro":
+                item_modificado['preco'] = int(preco_base * 1.5)
+                if tipo_item in ["Arma", "Anel", "Colar"]:
+                    item_modificado['dano'] = dano_base + 2
+                elif tipo_item in ["Armadura", "Capacete", "Bota"]:
+                    item_modificado['dano'] = dano_base - 1
+
+            elif nova_raridade == "Epico":
+                item_modificado['preco'] = int(preco_base * 2.0)
+                if tipo_item in ["Arma", "Anel", "Colar"]:
+                    item_modificado['dano'] = dano_base + 5
+                elif tipo_item in ["Armadura", "Capacete", "Bota"]:
+                    item_modificado['dano'] = dano_base - 3
+
+            elif nova_raridade == "Lendario":
+                item_modificado['preco'] = int(preco_base * 3.5)
+                if tipo_item in ["Arma", "Anel", "Colar"]:
+                    item_modificado['dano'] = dano_base + 10
+                elif tipo_item in ["Armadura", "Capacete", "Bota"]:
+                    item_modificado['dano'] = dano_base - 6
+
+            # ---- CORREÇÃO DO TEXTO DE USO AQUI ----
+            # Atualiza dinamicamente a descrição para o jogador ler o status real na mochila
+            dano_atualizado = item_modificado.get('dano', 0)
+            if tipo_item in ["Arma", "Anel", "Colar"]:
+                item_modificado['uso'] = f"+{dano_atualizado} de dano"
+            elif tipo_item in ["Armadura", "Capacete", "Bota"]:
+                # Inverte o sinal (-) para exibir positivo como defesa (ex: -4 vira +4 de defesa)
+                item_modificado['uso'] = f"+{abs(dano_atualizado)} de defesa"
+            
             rect_botao = pygame.Rect(100, y_inicial + (idx * 60), 600, 50)
-            self.itens_loja.append({"dados_brutos": item_dados, "rect": rect_botao})
+            
+            self.itens_loja.append({
+                "dados_brutos": item_modificado,
+                "rect": rect_botao
+            })
+
 
     def tratarEventos(self, listaEventos):
         mx, my = pygame.mouse.get_pos()
@@ -90,13 +154,20 @@ class Mercador(EstadoBase):
         if self.jogador.getDinheiro() >= preco:
             self.jogador.setDinheiro(self.jogador.getDinheiro() - preco)
             
+                        # Dentro de processar_compra(self, dados_item):
             novo_item = Item(
-                nome=dados_item['nome'], dano=int(dados_item.get('dano', 0)),
-                descricao=dados_item['descricao'], quantidadeMaxima=dados_item.get('quantidadeMaxima', 1),
-                efeito=dados_item['efeito'], preco=dados_item['preco'],
-                raridade=dados_item.get('raridade', 'Comum'), tipo=dados_item['tipo'],
-                img=dados_item.get('img', None), uso=dados_item.get('uso', None)
+                nome=dados_item['nome'],
+                dano=int(dados_item.get('dano', 0)),
+                descricao=dados_item['descricao'],
+                quantidadeMaxima=dados_item.get('quantidadeMaxima', 1),
+                efeito=dados_item['efeito'],
+                preco=dados_item['preco'],               # Garante o preço dinâmico com aumento
+                raridade=dados_item['raridade'],         # Garante a raridade sorteada na loja
+                tipo=dados_item['tipo'],
+                img=dados_item.get('img', None),
+                uso=dados_item.get('uso', None)
             )
+
             self.jogador.inv.mochila.append(novo_item)
             self.jogador.inv.salvarInventario()
             self.mensagem_feedback = f"Comprou {dados_item['nome']}!"
@@ -134,13 +205,20 @@ class Mercador(EstadoBase):
         cor_compra = (140, 100, 70) if self.aba_atual == "COMPRAR" else (70, 55, 45)
         cor_venda = (140, 100, 70) if self.aba_atual == "VENDER" else (70, 55, 45)
         
+        # Desenho físico dos botões de fundo
         pygame.draw.rect(tela, cor_compra, self.tab_comprar, border_radius=4)
         pygame.draw.rect(tela, cor_venda, self.tab_vender, border_radius=4)
         pygame.draw.rect(tela, (200, 50, 50), self.btn_atacar, border_radius=4) # Botão Perigo
         
-        tela.blit(self.fonte.render("Comprar Itens", True, (255, 255, 255)), (self.tab_comprar.x + 15, self.tab_comprar.y + 10))
-        tela.blit(self.fonte.render("Vender Bolsa", True, (255, 255, 255)), (self.tab_vender.x + 20, self.tab_vender.y + 10))
-        tela.blit(self.fonte.render("ATACAR", True, (255, 255, 255)), (self.btn_atacar.x + 12, self.btn_atacar.y + 10))
+        # 1. Renderiza os textos na memória
+        txt_aba_comprar = self.fonte.render("Comprar Itens", True, (255, 255, 255))
+        txt_aba_vender = self.fonte.render("Vender Bolsa", True, (255, 255, 255))
+        txt_aba_atacar = self.fonte.render("ATACAR", True, (255, 255, 255))
+
+        # 2. Desenha na tela calculando o centro automático de cada botão
+        tela.blit(txt_aba_comprar, txt_aba_comprar.get_rect(center=self.tab_comprar.center))
+        tela.blit(txt_aba_vender, txt_aba_vender.get_rect(center=self.tab_vender.center))
+        tela.blit(txt_aba_atacar, txt_aba_atacar.get_rect(center=self.btn_atacar.center))
 
         # Renderização condicional da lista de itens
         y_inicial = 170
@@ -153,7 +231,19 @@ class Mercador(EstadoBase):
                 pygame.draw.rect(tela, cor_rect, item["rect"], border_radius=5)
                 pygame.draw.rect(tela, (160, 120, 80), item["rect"], width=1, border_radius=5)
                 
-                txt_nome = self.fonte.render(f"{dados['nome']} ({dados['tipo']})", True, (255, 255, 255))
+                # --- SISTEMA DE CORES POR RARIDADE (COMPRA) ---
+                raridade = dados.get('raridade', 'Comum')
+                if raridade == "Raro":
+                    cor_nome = (30, 144, 255)     # Azul
+                elif raridade == "Epico":
+                    cor_nome = (163, 73, 164)    # Roxo
+                elif raridade == "Lendario":
+                    cor_nome = (255, 127, 39)    # Laranja
+                else:
+                    cor_nome = (255, 255, 255)   # Branco
+                
+                # AJUSTE: Texto limpo apenas com o Nome (que já tem a raridade) e o Tipo
+                txt_nome = self.fonte.render(f"{dados['nome']} ({dados['tipo']})", True, cor_nome)
                 txt_preco = self.fonte.render(f"{dados['preco']}g", True, (255, 215, 0) if pode_comprar else (240, 100, 100))
                 tela.blit(txt_nome, (item["rect"].x + 20, item["rect"].y + 15))
                 tela.blit(txt_preco, (item["rect"].x + 500, item["rect"].y + 15))
@@ -167,8 +257,20 @@ class Mercador(EstadoBase):
                     pygame.draw.rect(tela, (75, 85, 75), rect_venda, border_radius=5)
                     pygame.draw.rect(tela, (100, 130, 100), rect_venda, width=1, border_radius=5)
                     
+                    # --- SISTEMA DE CORES POR RARIDADE (VENDA) ---
+                    raridade = item_objeto.getRaridade()
+                    if raridade == "Raro":
+                        cor_nome = (30, 144, 255)
+                    elif raridade == "Epico":
+                        cor_nome = (163, 73, 164)
+                    elif raridade == "Lendario":
+                        cor_nome = (255, 127, 39)
+                    else:
+                        cor_nome = (255, 255, 255)
+                    
                     valor_reembolso = max(1, int(item_objeto.getPreco() // 2))
-                    txt_nome = self.fonte.render(f"{item_objeto.getNome()} ({item_objeto.getTipo()})", True, (255, 255, 255))
+                    # AJUSTE: Removida a tag duplicada no texto de venda também
+                    txt_nome = self.fonte.render(f"{item_objeto.getNome()} ({item_objeto.getTipo()})", True, cor_nome)
                     txt_preco = self.fonte.render(f"+{valor_reembolso}g", True, (100, 255, 100))
                     tela.blit(txt_nome, (rect_venda.x + 20, rect_venda.y + 15))
                     tela.blit(txt_preco, (rect_venda.x + 500, rect_venda.y + 15))
