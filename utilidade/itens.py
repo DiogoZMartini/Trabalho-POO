@@ -94,20 +94,20 @@ class Item(Geral):
             return None
         dadosBanco = resultado[0]
         # 2. Sorteia a raridade do item
-        raridades = ["Comum", "Raro", "Épico", "Lendário"]
-        chances = [70, 20, 8, 2]
+        raridades = ["Comum", "Raro", "Épico", "Lendário", "Divino"]
+        chances = [83.499, 15, 1, 0.5, 0.001]
         raridadeSorteada = random.choices(raridades, weights=chances, k=1)[0]
         # 3. Define os multiplicadores de atributos
-        multiplicadores = {"Comum": 1.0, "Raro": 1.5, "Épico": 2.0, "Lendário": 3.0}
+        multiplicadores = {"Comum": 1.0, "Raro": 1.25, "Épico": 1.8, "Lendário": 2.5, "Divino": 10.0}
         multiplicador = multiplicadores[raridadeSorteada]
         # 4. Modifica os valores base do banco usando o multiplicador da raridade
         if abs(dadosBanco['dano']) == 1:
-            valoresFixos = {"Comum": 1, "Raro": 2, "Épico": 3, "Lendário": 4}
+            valoresFixos = {"Comum": 1, "Raro": 2, "Épico": 3, "Lendário": 4, "Divino": 10}
             sinal = 1 if dadosBanco['dano'] > 0 else -1
             valorFinal = valoresFixos[raridadeSorteada] * sinal
         else:
             valorFinal = int(dadosBanco['dano'] * multiplicador)
-        precoFinal = int(dadosBanco['preco'] * multiplicador * 1.2)
+        precoFinal = int(dadosBanco['preco'] * multiplicador * 2)
         qtdMax = 5 if dadosBanco['tipo'] == 'Consumivel' else 1
         valorExibicaoStr = str(abs(valorFinal))
         efeito_base = dadosBanco['efeito']

@@ -56,7 +56,7 @@ class Inimigo (Personagem):
 
     def dropadoExp(self):
         lvl = self.getLvl()
-        exp_base = (lvl * 25) + (lvl - 1) * 5
+        exp_base = (lvl * 15) + (lvl - 1) * 5
         variacao_min = int(exp_base * 0.85)
         variacao_max = int(exp_base * 1.15)
         expFinal = random.randint(variacao_min, variacao_max)
@@ -72,8 +72,8 @@ class Inimigo (Personagem):
         return None
     
     def dropadoDinheiro(self):
-        minimo = self.getLvl() * 5
-        maximo = self.getLvl() * 15
+        minimo = 5
+        maximo = 15
         dinheiroFinal = random.randint(minimo, maximo)
         return dinheiroFinal
 
@@ -82,11 +82,15 @@ class Inimigo (Personagem):
         return defesaTotal
 
     @classmethod
-    def gerarInimigoAleatorio(cls, lvlJogador):
+    def gerarInimigoAleatorio(cls, lvlJogador, nomeInimigoAlvo):
+        inimigosValidos = None
         todosInimigos = tabela_inimigos.all()
-        inimigosValidos = [i for i in todosInimigos if i['nome'] != 'Mercador']
-        if not inimigosValidos:
-            return cls(nome="Zumbie", dano=5, vida=30,vidaMaxima=30, lvl=lvlJogador, recurso=0, spa="Mordida")
+        if nomeInimigoAlvo != "Mercador":
+            inimigosValidos = [i for i in todosInimigos if i['nome'] != 'Mercador']
+            if not inimigosValidos:
+                return cls(nome="Zumbie", dano=5, vida=30,vidaMaxima=30, lvl=lvlJogador, recurso=0, spa="Mordida")
+        else:
+            inimigosValidos = [i for i in todosInimigos if i['nome'] == 'Mercador']
         dadosBase = random.choice(inimigosValidos)
         lvlSorteado = random.randint(lvlJogador - 1, lvlJogador + 1)
         if lvlSorteado < 1:
@@ -166,6 +170,9 @@ class Mercador(Inimigo):
         super().expDropItem()
     def expDropDinheiro(self):
         super().expDropDinheiro()
+    def gerarInimigoAleatorio():
+        super().gerarInimigoAleatorio()    
+
     def comparItem(self, item, dinheiro, inv, mercadoria):
         pass
     def venderItem(self, item, dinheiro, inv, mercadoria):

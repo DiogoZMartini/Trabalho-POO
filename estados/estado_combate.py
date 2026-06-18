@@ -14,44 +14,14 @@ class EstadoCombate(EstadoBase):
         self.menuPause = MenuPause()
         self.jogoPausado = False
         self.acaoAtiva = None
-        # AJUSTE: Passando o nomeInimigoAlvo recebido para a função
         self.carregarInimigo(nomeInimigoAlvo) 
         if self.jogador and hasattr(self.jogador, 'inv') and self.jogador.inv:
             self.jogador.inv.modo = "combate"
 
 
-    def carregarInimigo(self, nomeInimigoAlvo):
-        from entidades.inimigo import Inimigo 
-        
+    def carregarInimigo(self, nomeInimigoAlvo): 
         lvlJogador = self.jogador.getLvl()
-        
-        # Se o alvo for o Mercador, busca ele especificamente no catálogo
-        if nomeInimigoAlvo == "Mercador":
-            from banco import tabela_inimigos
-            from tinydb import Query
-            
-            resultados = tabela_inimigos.search(Query().nome == "Mercador")
-            if resultados:
-                dados_mercador = resultados[0]
-                
-                # CORREÇÃO: Passando os 3 argumentos que estavam faltando para o seu Inimigo.__init__()
-                self.inimigo = Inimigo(
-                    nome=dados_mercador['nome'],
-                    vida=int(dados_mercador['vida']),
-                    vidaMaxima=int(dados_mercador['vida']),
-                    dano=int(dados_mercador['dano']),
-                    spa=dados_mercador['spa'],
-                    lvl=lvlJogador,
-                    spaEnergia=0,              # Começa com 0 de energia especial
-                    dropExp=50 * lvlJogador,   # Dá bastante experiência baseado no nível
-                    dropDinheiro=500           # Drop de dinheiro gigante por derrotar o mercador!
-                )
-            else:
-                self.inimigo = Inimigo.gerarInimigoAleatorio(lvlJogador)
-        else:
-            # Fluxo padrão original para monstros normais
-            self.inimigo = Inimigo.gerarInimigoAleatorio(lvlJogador)
-            
+        self.inimigo = Inimigo.gerarInimigoAleatorio(lvlJogador, nomeInimigoAlvo)
         self.jogador.inimigoFoco = {
             'nome': self.inimigo.getNome(),
             'vida': self.inimigo.getVida(),
@@ -86,8 +56,7 @@ class EstadoCombate(EstadoBase):
             import random
             from .estado_mercador import Mercador  
             
-            if random.random() <= 0.30:  # 30% de chance de aparecer
-                print(f"[EVENTO] O Mercador apareceu após derrotar o {self.inimigo.getNome()}!")
+            if random.random() <= 0.90:  # 20% de chance de aparecer
                 self.proximoEstado = Mercador(self.jogador)
             else:
                 self.proximoEstado = Vitoria(self.jogador, expGanho, dinheiroGanho, itemGanho)

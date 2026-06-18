@@ -31,71 +31,24 @@ class Mercador(EstadoBase):
 
 
     def carregar_itens_do_banco(self):
-        """Busca o catálogo do TinyDB, aleatoriza os produtos e altera o preço por raridade"""
-        import random
-        import copy
-        
-        todos_itens = tabela_itens.all()
-        # Filtra itens válidos (com preço maior que 0)
-        itens_validos = [i for i in todos_itens if i.get('preco', 0) > 0]
-        
-        qtd = min(self.quantidade_itens_loja, len(itens_validos))
-        itens_sorteados = random.sample(itens_validos, qtd)
-        
-        lista_raridades = ["Comum", "Raro", "Epico", "Lendario"]
-        pesos_raridade = [0.60, 0.25, 0.12, 0.03]
-        
         y_inicial = 170
-        for idx, item_original in enumerate(itens_sorteados):
-            item_modificado = copy.deepcopy(item_original)
-            
-            nova_raridade = random.choices(lista_raridades, weights=pesos_raridade, k=1)[0]
-            item_modificado['raridade'] = nova_raridade
-            
-            # ---- AJUSTE DO NOME DINÂMICO AQUI ----
-            # Adiciona a raridade ao nome do item apenas se não for Comum
-            if nova_raridade != "Comum":
-                item_modificado['nome'] = f"{item_original['nome']} ({nova_raridade})"
-            
-            preco_base = item_modificado['preco']
-            dano_base = item_modificado.get('dano', 0)
-            tipo_item = item_modificado.get('tipo', '')
-            
-            # Aplica multiplicadores de preço e bônus de status baseados na raridade
-            if nova_raridade == "Raro":
-                item_modificado['preco'] = int(preco_base * 1.5)
-                if tipo_item in ["Arma", "Anel", "Colar"]:
-                    item_modificado['dano'] = dano_base + 2
-                elif tipo_item in ["Armadura", "Capacete", "Bota"]:
-                    item_modificado['dano'] = dano_base - 1
-
-            elif nova_raridade == "Epico":
-                item_modificado['preco'] = int(preco_base * 2.0)
-                if tipo_item in ["Arma", "Anel", "Colar"]:
-                    item_modificado['dano'] = dano_base + 5
-                elif tipo_item in ["Armadura", "Capacete", "Bota"]:
-                    item_modificado['dano'] = dano_base - 3
-
-            elif nova_raridade == "Lendario":
-                item_modificado['preco'] = int(preco_base * 3.5)
-                if tipo_item in ["Arma", "Anel", "Colar"]:
-                    item_modificado['dano'] = dano_base + 10
-                elif tipo_item in ["Armadura", "Capacete", "Bota"]:
-                    item_modificado['dano'] = dano_base - 6
-
-            # ---- CORREÇÃO DO TEXTO DE USO AQUI ----
-            # Atualiza dinamicamente a descrição para o jogador ler o status real na mochila
-            dano_atualizado = item_modificado.get('dano', 0)
-            if tipo_item in ["Arma", "Anel", "Colar"]:
-                item_modificado['uso'] = f"+{dano_atualizado} de dano"
-            elif tipo_item in ["Armadura", "Capacete", "Bota"]:
-                # Inverte o sinal (-) para exibir positivo como defesa (ex: -4 vira +4 de defesa)
-                item_modificado['uso'] = f"+{abs(dano_atualizado)} de defesa"
-            
+        for idx in range(0,5):
             rect_botao = pygame.Rect(100, y_inicial + (idx * 60), 600, 50)
-            
+            idx = Item.gerarItemAleatorio()
+            if idx.preco == 0:
+                while True:
+                    idx == Item.gerarItemAleatorio()
+                    if idx.preco != 0:
+                        break
+            for item in self.itens_loja:
+                dados = item["dados_brutos"]
+                if idx.nome == dados.nome:
+                    while True:
+                        idx == Item.gerarItemAleatorio()
+                        if idx.nome != dados.nome:
+                            break
             self.itens_loja.append({
-                "dados_brutos": item_modificado,
+                "dados_brutos": idx,
                 "rect": rect_botao
             })
 
@@ -225,14 +178,14 @@ class Mercador(EstadoBase):
         if self.aba_atual == "COMPRAR":
             for item in self.itens_loja:
                 dados = item["dados_brutos"]
-                pode_comprar = self.jogador.getDinheiro() >= dados["preco"]
+                pode_comprar = self.jogador.getDinheiro() >= int(dados.preco)
                 cor_rect = (90, 70, 50) if pode_comprar else (55, 45, 40)
                 
                 pygame.draw.rect(tela, cor_rect, item["rect"], border_radius=5)
                 pygame.draw.rect(tela, (160, 120, 80), item["rect"], width=1, border_radius=5)
                 
                 # --- SISTEMA DE CORES POR RARIDADE (COMPRA) ---
-                raridade = dados.get('raridade', 'Comum')
+                raridade = dados.raridade
                 if raridade == "Raro":
                     cor_nome = (30, 144, 255)     # Azul
                 elif raridade == "Epico":
@@ -243,8 +196,8 @@ class Mercador(EstadoBase):
                     cor_nome = (255, 255, 255)   # Branco
                 
                 # AJUSTE: Texto limpo apenas com o Nome (que já tem a raridade) e o Tipo
-                txt_nome = self.fonte.render(f"{dados['nome']} ({dados['tipo']})", True, cor_nome)
-                txt_preco = self.fonte.render(f"{dados['preco']}g", True, (255, 215, 0) if pode_comprar else (240, 100, 100))
+                txt_nome = self.fonte.render(f"{dados.nome} ({dados.tipo})", True, cor_nome)
+                txt_preco = self.fonte.render(f"{dados.preco}g", True, (255, 215, 0) if pode_comprar else (240, 100, 100))
                 tela.blit(txt_nome, (item["rect"].x + 20, item["rect"].y + 15))
                 tela.blit(txt_preco, (item["rect"].x + 500, item["rect"].y + 15))
 
