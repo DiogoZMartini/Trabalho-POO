@@ -62,7 +62,7 @@ class Saves(EstadoBase):
                         jogadorCarregado = Jogador(
                             nome=dadosSalvos['nome'],
                             classe=dadosSalvos['classe'],
-                            dano=dadosSalvos['dano'],  # Puxa direto do banco!
+                            dano=dadosSalvos['dano'],
                             vida=dadosSalvos['vida'],
                             vidaMaxima=dadosSalvos['vidaMaxima'],
                             lvl=dadosSalvos['lvl'],
