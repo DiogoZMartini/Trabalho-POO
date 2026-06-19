@@ -83,12 +83,9 @@ class Inimigo (Personagem):
 
     @classmethod
     def gerarInimigoAleatorio(cls, lvlJogador, nomeInimigoAlvo):
-        inimigosValidos = None
         todosInimigos = tabela_inimigos.all()
         if nomeInimigoAlvo != "Mercador":
             inimigosValidos = [i for i in todosInimigos if i['nome'] != 'Mercador']
-            if not inimigosValidos:
-                return cls(nome="Zumbie", dano=5, vida=30,vidaMaxima=30, lvl=lvlJogador, recurso=0, spa="Mordida")
         else:
             inimigosValidos = [i for i in todosInimigos if i['nome'] == 'Mercador']
         dadosBase = random.choice(inimigosValidos)

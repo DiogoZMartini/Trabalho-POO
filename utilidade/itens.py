@@ -90,7 +90,6 @@ class Item(Geral):
         # 1. Busca os dados brutos cadastrados lá na lista_itens do seu banco.py
         resultado = tabela_itens.search(Query().nome == nomeBase)
         if not resultado:
-            print(f"[Erro] O item '{nomeBase}' não existe no catálogo do banco de dados!")
             return None
         dadosBanco = resultado[0]
         # 2. Sorteia a raridade do item
