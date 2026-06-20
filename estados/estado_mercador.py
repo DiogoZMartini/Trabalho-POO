@@ -1,10 +1,9 @@
 import pygame
 from .estado_base import EstadoBase
-from banco import tabela_itens
-from utilidade.itens import Item  
-from .estado_combate import EstadoCombate # Importa para iniciar a luta caso o jogador ataque
+from utilidade.itens import Item
+from entidades.inimigo import Mercador
 
-class Mercador(EstadoBase):
+class EstadoMercador(EstadoBase):
     def __init__(self, jogador):
         super().__init__()
         pygame.font.init()
@@ -29,6 +28,8 @@ class Mercador(EstadoBase):
         self.itens_loja = []            # 2º Cria a lista vazia
         self.carregar_itens_do_banco()  # 3º Só agora carrega do banco de dados!
 
+        self.mercador = Mercador.gerarInimigoAleatorio(jogador.getLvl(), 'Mercador')
+
 
     def carregar_itens_do_banco(self):
         y_inicial = 170
@@ -37,14 +38,14 @@ class Mercador(EstadoBase):
             idx = Item.gerarItemAleatorio()
             if idx.preco == 0:
                 while True:
-                    idx == Item.gerarItemAleatorio()
+                    idx = Item.gerarItemAleatorio()
                     if idx.preco != 0:
                         break
             for item in self.itens_loja:
                 dados = item["dados_brutos"]
                 if idx.nome == dados.nome:
                     while True:
-                        idx == Item.gerarItemAleatorio()
+                        idx = Item.gerarItemAleatorio()
                         if idx.nome != dados.nome:
                             break
             self.itens_loja.append({
@@ -56,7 +57,7 @@ class Mercador(EstadoBase):
     def tratarEventos(self, listaEventos):
         mx, my = pygame.mouse.get_pos()
         click = False
-        
+        from .estado_combate import EstadoCombate
         for event in listaEventos:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 self.proximoEstado = EstadoCombate(self.jogador)
@@ -98,50 +99,13 @@ class Mercador(EstadoBase):
                         break
 
     def processar_compra(self, dados_item):
-        preco = dados_item['preco']
-        if len(self.jogador.inv.mochila) >= 15:
-            self.mensagem_feedback = "Mochila cheia!"
-            self.tempo_feedback = 90
-            return
-
-        if self.jogador.getDinheiro() >= preco:
-            self.jogador.setDinheiro(self.jogador.getDinheiro() - preco)
-            
-                        # Dentro de processar_compra(self, dados_item):
-            novo_item = Item(
-                nome=dados_item['nome'],
-                dano=int(dados_item.get('dano', 0)),
-                descricao=dados_item['descricao'],
-                quantidadeMaxima=dados_item.get('quantidadeMaxima', 1),
-                efeito=dados_item['efeito'],
-                preco=dados_item['preco'],               # Garante o preço dinâmico com aumento
-                raridade=dados_item['raridade'],         # Garante a raridade sorteada na loja
-                tipo=dados_item['tipo'],
-                img=dados_item.get('img', None),
-                uso=dados_item.get('uso', None)
-            )
-
-            self.jogador.inv.mochila.append(novo_item)
-            self.jogador.inv.salvarInventario()
-            self.mensagem_feedback = f"Comprou {dados_item['nome']}!"
-        else:
-            self.mensagem_feedback = "Dinheiro insuficiente!"
+        sucesso, mensagem = self.mercador.comparItem(dados_item, self.jogador)
+        self.mensagem_feedback = mensagem
         self.tempo_feedback = 90
 
     def processar_venda(self, index_item):
-        """Remove o item selecionado e reembolsa metade do preço de catálogo do item"""
-        item_para_vender = self.jogador.inv.mochila[index_item]
-        # Calcula taxa de revenda (Ex: 50% do valor de compra)
-        valor_venda = max(1, int(item_para_vender.getPreco() // 2))
-        
-        self.jogador.setDinheiro(self.jogador.getDinheiro() + valor_venda)
-        nome_removido = item_para_vender.getNome()
-        
-        # Remove da mochila real do jogador
-        self.jogador.inv.mochila.pop(index_item)
-        self.jogador.inv.salvarInventario()
-        
-        self.mensagem_feedback = f"Vendeu {nome_removido} por {valor_venda}g!"
+        sucesso, mensagem = self.mercador.venderItem(index_item, self.jogador)
+        self.mensagem_feedback = mensagem
         self.tempo_feedback = 90
 
     def desenhar(self, tela):
@@ -194,8 +158,6 @@ class Mercador(EstadoBase):
                     cor_nome = (255, 127, 39)    # Laranja
                 else:
                     cor_nome = (255, 255, 255)   # Branco
-                
-                # AJUSTE: Texto limpo apenas com o Nome (que já tem a raridade) e o Tipo
                 txt_nome = self.fonte.render(f"{dados.nome} ({dados.tipo})", True, cor_nome)
                 txt_preco = self.fonte.render(f"{dados.preco}g", True, (255, 215, 0) if pode_comprar else (240, 100, 100))
                 tela.blit(txt_nome, (item["rect"].x + 20, item["rect"].y + 15))
@@ -222,7 +184,6 @@ class Mercador(EstadoBase):
                         cor_nome = (255, 255, 255)
                     
                     valor_reembolso = max(1, int(item_objeto.getPreco() // 2))
-                    # AJUSTE: Removida a tag duplicada no texto de venda também
                     txt_nome = self.fonte.render(f"{item_objeto.getNome()} ({item_objeto.getTipo()})", True, cor_nome)
                     txt_preco = self.fonte.render(f"+{valor_reembolso}g", True, (100, 255, 100))
                     tela.blit(txt_nome, (rect_venda.x + 20, rect_venda.y + 15))

@@ -1,6 +1,8 @@
 import pygame
 from .estado_base import EstadoBase
 from .estado_menupause import MenuPause
+import random
+from .estado_mercador import EstadoMercador
 
 class Vitoria(EstadoBase):
     def __init__(self, jogador, exp_ganha, dinheiro_ganho, item_ganho):
@@ -75,8 +77,11 @@ class Vitoria(EstadoBase):
         # 3. Se houve clique em qualquer momento do frame, checa as colisões
         if click:
             if self.concluir.collidepoint((mx, my)):
-                from .estado_combate import EstadoCombate
-                self.proximoEstado = EstadoCombate(self.jogador)
+                if random.random() <= 0.90:  # 20% de chance de aparecer
+                    self.proximoEstado = EstadoMercador(self.jogador)
+                else:
+                    from .estado_combate import EstadoCombate
+                    self.proximoEstado = EstadoCombate(self.jogador)
                 self.concluido = True
             elif self.itemGanho and not self.itemColetado and self.rectItemClicavel.collidepoint((mx, my)):
                 if hasattr(self.jogador, 'getInventario') and len(self.jogador.getInv()) >= 15:

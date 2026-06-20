@@ -96,7 +96,7 @@ class Inimigo (Personagem):
         vidaFinal = int(dadosBase['vida'] * multiplicadorStatus)
         danoFinal = int(dadosBase['dano'] * multiplicadorStatus)
         dropExpCalculado = lvlSorteado * 25
-        dropDinheiroCalculado = lvlSorteado * random.randint(5, 15)
+        dropDinheiroCalculado = random.randint(5, 15)
         return cls(
             nome=dadosBase['nome'],
             dano=danoFinal,
@@ -110,8 +110,8 @@ class Inimigo (Personagem):
         )
 
 class Mercador(Inimigo):
-    def __init__(self, nome, dano, vida, vidaMaxima, spa, spaEnergia, lvl, dropExp, dropdinheiro):
-        super().__init__(nome, dano, vida, vidaMaxima, lvl, spa, spaEnergia, dropExp, dropdinheiro)
+    def __init__(self, nome, dano, vida, vidaMaxima, spa, spaEnergia, lvl, dropExp, dropDinheiro):
+        super().__init__(nome, dano, vida, vidaMaxima, lvl, spa, spaEnergia, dropExp, dropDinheiro)
         self.mercadoria = []
 
     def getNome(self):
@@ -150,27 +150,51 @@ class Mercador(Inimigo):
         super().setSpa(spa)
     def setSpaEnergia(self, spaEnergia):
         super().setSpaEnergia(spaEnergia)
-    def setDropExp(self, dropexp):
-        super().setDropExp(dropexp)
-    def setDropItem(self, dropitem):
-        super().setDropItem(dropitem)
-    def setDropDinheiro(self, dropdinheiro):
-        super().setDropDinheiro(dropdinheiro)
+    def setDropExp(self, dropExp):
+        super().setDropExp(dropExp)
+    def setDropItem(self, dropItem):
+        super().setDropItem(dropItem)
+    def setDropDinheiro(self, dropDinheiro):
+        super().setDropDinheiro(dropDinheiro)
     def setMercadoria(self, mercadoria):
         self.mercadoria = mercadoria
 
     def tomarDano(self, dano):
         super().tomarDano(dano)
-    def expDropado(self):
-        super().expDropado()
-    def expDropItem(self):
-        super().expDropItem()
-    def expDropDinheiro(self):
-        super().expDropDinheiro()
-    def gerarInimigoAleatorio():
-        super().gerarInimigoAleatorio()    
+    def dropadoExp(self):
+        super().dropadoExp()
+    def dropadoItem(self):
+        super().dropadoItem()
+    def dropadoDinheiro(self):
+        super().dropadoDinheiro()
+    @classmethod
+    def gerarInimigoAleatorio(cls, lvlJogador, nomeInimigoAlvo):
+        inimigo = super().gerarInimigoAleatorio(lvlJogador, nomeInimigoAlvo)
+        return inimigo
 
-    def comparItem(self, item, dinheiro, inv, mercadoria):
-        pass
-    def venderItem(self, item, dinheiro, inv, mercadoria):
-        pass
+    def comparItem(self, itemParaComprar, jogador):
+        preco = itemParaComprar.getPreco()
+        inv = jogador.inv
+
+        if len(inv.mochila) >= 15:
+            return False, "Mochila cheia!"
+
+        if jogador.getDinheiro() >= preco:
+            jogador.setDinheiro(jogador.getDinheiro() - preco)
+            inv.mochila.append(itemParaComprar)
+            inv.salvarInventario()
+            return True, f"Comprou {itemParaComprar.getNome()}!"
+        else:
+            return False, "Dinheiro insuficiente!"
+
+    def venderItem(self, indexItem, jogador):
+        inv = jogador.inv
+        itemParaVender = inv.mochila[indexItem]
+        valorVenda = max(1, int(itemParaVender.getPreco() // 2))
+
+        jogador.setDinheiro(jogador.getDinheiro() + valorVenda)
+        nomeRemovido = itemParaVender.getNome()
+
+        inv.mochila.pop(indexItem)
+        inv.salvarInventario()
+        return True, f"Vendeu {nomeRemovido} por {valorVenda}g!"

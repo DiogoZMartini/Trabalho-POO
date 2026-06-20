@@ -51,18 +51,8 @@ class EstadoCombate(EstadoBase):
             # Aplica recompensa ao personagem
             self.jogador.setExp(self.jogador.getExp() + expGanho)
             self.jogador.setDinheiro(self.jogador.getDinheiro() + dinheiroGanho)
-            
-            # --- EVENTO ALEATÓRIO DO MERCADOR ---
-            import random
-            from .estado_mercador import Mercador  
-            
-            if random.random() <= 0.90:  # 20% de chance de aparecer
-                self.proximoEstado = Mercador(self.jogador)
-            else:
-                self.proximoEstado = Vitoria(self.jogador, expGanho, dinheiroGanho, itemGanho)
-                
+            self.proximoEstado = Vitoria(self.jogador, expGanho, dinheiroGanho, itemGanho)
             self.concluido = True
-            
         # 2. Se a vida do jogador zerou, fim de jogo
         if self.jogador.getVida() <= 0:
             # Força o Redesenho: Atualiza a sua barra para 0 antes do pop-up de derrota aparecer
@@ -73,7 +63,6 @@ class EstadoCombate(EstadoBase):
                 self.concluido = True
                 return True
         return False
-
 
     def tratarEventos(self, eventos):
         # 1. Se o jogo estiver pausado, o MenuPause assume o controle absoluto
