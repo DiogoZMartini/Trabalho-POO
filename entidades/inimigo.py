@@ -112,7 +112,6 @@ class Inimigo (Personagem):
 class Mercador(Inimigo):
     def __init__(self, nome, dano, vida, vidaMaxima, spa, spaEnergia, lvl, dropExp, dropDinheiro):
         super().__init__(nome, dano, vida, vidaMaxima, lvl, spa, spaEnergia, dropExp, dropDinheiro)
-        self.mercadoria = []
 
     def getNome(self):
         return super().getNome()
