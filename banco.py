@@ -55,10 +55,10 @@ def inicializacaoDeCatalogos():
     ]
     tabela_classe.insert_multiple(lista_classe)
 
-def salvarJogo(slot,nome, vida, dano, vidaMaxima, lvl, spa, spaEnergia, exp, classe, inv, equipamentos, dinheiro, maxXp):
+def salvarJogo(slot, nome, vida, dano, vidaMaxima, lvl, spa, spaEnergia, exp, classe, inv, equipamentos, dinheiro, maxXp):
     tabela_jogador.upsert({'slot': slot,'nome':nome,'vida':vida,'dano':dano,'vidaMaxima': vidaMaxima,'lvl':lvl,
                            'spa':spa,'spaEnergia':spaEnergia,'exp':exp,'classe':classe,'inv':inv, 'equipamentos':equipamentos,
-                           'dinheiro':dinheiro,'maxXp':maxXp}, Query().nome == nome)
+                           'dinheiro':dinheiro,'maxXp':maxXp}, Query().slot == slot)
 
 def carregarJogo(slot):
     resultado = tabela_jogador.search(Query().slot == slot)

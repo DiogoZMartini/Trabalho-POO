@@ -77,7 +77,7 @@ class Vitoria(EstadoBase):
         # 3. Se houve clique em qualquer momento do frame, checa as colisões
         if click:
             if self.concluir.collidepoint((mx, my)):
-                if random.random() <= 0.90:  # 20% de chance de aparecer
+                if random.random() <= 0.90:  # 90% de chance de aparecer
                     self.proximoEstado = EstadoMercador(self.jogador)
                 else:
                     from .estado_combate import EstadoCombate

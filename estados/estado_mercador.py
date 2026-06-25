@@ -35,19 +35,18 @@ class EstadoMercador(EstadoBase):
         y_inicial = 170
         for idx in range(0,5):
             rect_botao = pygame.Rect(100, y_inicial + (idx * 60), 600, 50)
-            idx = Item.gerarItemAleatorio()
-            if idx.preco == 0:
-                while True:
-                    idx = Item.gerarItemAleatorio()
-                    if idx.preco != 0:
+            while True:
+                idx = Item.gerarItemAleatorio()
+                if idx.preco == 0:
+                    continue
+                nomeRepetido = False
+                for item in self.itens_loja:
+                    dados = item["dados_brutos"]
+                    if idx.nome == dados.nome:
+                        nomeRepetido = True
                         break
-            for item in self.itens_loja:
-                dados = item["dados_brutos"]
-                if idx.nome == dados.nome:
-                    while True:
-                        idx = Item.gerarItemAleatorio()
-                        if idx.nome != dados.nome:
-                            break
+                if not nomeRepetido:
+                    break
             self.itens_loja.append({
                 "dados_brutos": idx,
                 "rect": rect_botao
@@ -154,7 +153,7 @@ class EstadoMercador(EstadoBase):
                     cor_nome = (30, 144, 255)     # Azul
                 elif raridade == "Epico":
                     cor_nome = (163, 73, 164)    # Roxo
-                elif raridade == "Lendario":
+                elif raridade == "Lendário":
                     cor_nome = (255, 127, 39)    # Laranja
                 else:
                     cor_nome = (255, 255, 255)   # Branco
@@ -178,7 +177,7 @@ class EstadoMercador(EstadoBase):
                         cor_nome = (30, 144, 255)
                     elif raridade == "Epico":
                         cor_nome = (163, 73, 164)
-                    elif raridade == "Lendario":
+                    elif raridade == "Lendário":
                         cor_nome = (255, 127, 39)
                     else:
                         cor_nome = (255, 255, 255)

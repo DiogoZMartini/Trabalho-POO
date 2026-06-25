@@ -120,8 +120,8 @@ class Mercador(Inimigo):
         return super().getDano()
     def getVida(self):
         return super().getVida()
-    def setVidaMaxima(self, vidaMaxima):
-        super().setVidaMaxima(vidaMaxima)
+    def getVidaMaxima(self):
+        super().getVidaMaxima()
     def getLvl(self):
         return super().getLvl()
     def getSpa(self):
@@ -191,10 +191,8 @@ class Mercador(Inimigo):
         inv = jogador.inv
         itemParaVender = inv.mochila[indexItem]
         valorVenda = max(1, int(itemParaVender.getPreco() // 2))
-
         jogador.setDinheiro(jogador.getDinheiro() + valorVenda)
         nomeRemovido = itemParaVender.getNome()
-
         inv.mochila.pop(indexItem)
         inv.salvarInventario()
         return True, f"Vendeu {nomeRemovido} por {valorVenda}g!"
