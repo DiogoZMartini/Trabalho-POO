@@ -133,8 +133,6 @@ class Mercador(Inimigo):
         return super().getDropItem()
     def getDropDinheiro(self):
         return super().getDropDinheiro()
-    def getMercadoria(self):
-        return self.mercadoria
     def setNome(self, nome):
         super().setNome(nome)
     def setDano(self, dano):
@@ -155,8 +153,6 @@ class Mercador(Inimigo):
         super().setDropItem(dropItem)
     def setDropDinheiro(self, dropDinheiro):
         super().setDropDinheiro(dropDinheiro)
-    def setMercadoria(self, mercadoria):
-        self.mercadoria = mercadoria
 
     def tomarDano(self, dano):
         super().tomarDano(dano)
