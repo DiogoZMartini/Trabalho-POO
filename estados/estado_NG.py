@@ -19,7 +19,6 @@ class NewGame(EstadoBase):
         self.voltar = pygame.Rect(20, 20, 40, 40)
 
     def reiniciar(self):
-        """Método exclusivo para resetar a tela sempre que necessário"""
         self.nomeJogador = ""
         # Ativa o modo de digitação moderno do pygame-ce
         pygame.key.start_text_input()
@@ -47,7 +46,6 @@ class NewGame(EstadoBase):
                     
                 elif event.key == pygame.K_RETURN and len(self.nomeJogador) > 0:
                     pygame.key.stop_text_input()
-                    print(f"Nome salvo temporariamente: {self.nomeJogador}")
                     self.proximoEstado = Classes(self.nomeJogador)
                     self.concluido = True
                     self.reiniciar() # Reseta para quando criarem outro jogo
@@ -65,7 +63,6 @@ class NewGame(EstadoBase):
                     
                 if self.confirmar.collidepoint((mx, my)) and len(self.nomeJogador) > 0:
                     pygame.key.stop_text_input()
-                    print(f"Nome salvo temporariamente: {self.nomeJogador}")
                     self.proximoEstado = Classes(self.nomeJogador)
                     self.concluido = True
                     self.reiniciar() # Reseta após avançar com sucesso

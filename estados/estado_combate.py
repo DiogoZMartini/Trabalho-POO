@@ -149,8 +149,6 @@ class EstadoCombate(EstadoBase):
             case "VOLTARMENU":
                 self.exibindoBolsa = False
                 print("[COMBATE] Retornando ao menu principal de ações.")
-            case "FUGIR":
-                print("\n[FUGA] Você tenta escapar da batalha!")
             case _:
                 print(f"Aviso: Ação desconhecida recebida no combate: {acao}")
 
@@ -294,7 +292,6 @@ class EstadoCombate(EstadoBase):
                 {"nome": "ATAQUE", "id": "ataque"},
                 {"nome": "ITEM", "id": "item"},
                 {"nome": "HABILIDADE", "id": "habilidade"},
-                {"nome": "FUGIR", "id": "fugir"}
             ]
             self.jogador.inv.slotsRegiao = []
             for i, opcao in enumerate(opcoesMenu):
@@ -340,9 +337,6 @@ class EstadoCombate(EstadoBase):
                 case "habilidade":
                     titulo = "Ação: Habilidade Especial"
                     corpo = f"Gasta seus pontos de {self.jogador.getClasse()} para realizar um golpe devastador."
-                case "fugir":
-                    titulo = "Ação: Escapar"
-                    corpo = "Tenta fugir da batalha. Sucesso baseado na diferença de nível e sorte."
                 case "voltarMenu":
                     titulo = "Voltar ao Menu"
                     corpo = "Fecha a mochila e retorna para as opções de ataque e habilidades sem gastar seu turno."

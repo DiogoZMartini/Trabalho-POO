@@ -10,8 +10,6 @@ class MenuPause(EstadoBase):
         self.fonte = pygame.font.SysFont(None, 40)
         self.resume = pygame.Rect(250, 50, 250, 100)
         self.resume.center = (400, 100)
-        self.options = pygame.Rect(250, 30, 250, 100)
-        self.options.center = (400, 300)
         self.voltamenu = pygame.Rect(250, 10, 250, 100)
         self.voltamenu.center = (400, 500)
         self.pause = True
@@ -38,8 +36,6 @@ class MenuPause(EstadoBase):
         if click:
             if self.resume.collidepoint((mx, my)):
                 self.pause = False
-                pass
-            elif self.options.collidepoint((mx, my)):
                 pass
             elif self.voltamenu.collidepoint((mx, my)):
                 from .estado_saves import Saves
@@ -74,20 +70,16 @@ class MenuPause(EstadoBase):
             # Desenha os retângulos dos botões
         pygame.draw.rect(tela, (46, 85, 217), self.caixa_pop)
         pygame.draw.rect(tela, 'gray', self.resume)
-        pygame.draw.rect(tela, 'gray', self.options)
         pygame.draw.rect(tela, 'gray', self.voltamenu)
             
             # 1. Renderiza os textos (Texto, Antialiasing, Cor do Texto)
         txt_resume = self.fonte.render("Resume", True, (0, 0, 0))
-        txt_options = self.fonte.render("Opções", True, (0, 0, 0))
         txt_voltamenu = self.fonte.render("Sair", True, (0, 0, 0))
             
             # 2. Cria retângulos para os textos e centraliza nos botões
         rect_txt_resume = txt_resume.get_rect(center= self.resume.center)
-        rect_txt_options = txt_options.get_rect(center= self.options.center)
         rect_txt_voltamenu = txt_voltamenu.get_rect(center= self.voltamenu.center)
             
             # 3. Desenha os textos na tela
         tela.blit(txt_resume, rect_txt_resume)
-        tela.blit(txt_options, rect_txt_options)
         tela.blit(txt_voltamenu, rect_txt_voltamenu)
